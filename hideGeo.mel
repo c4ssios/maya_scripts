@@ -1,0 +1,9 @@
+global proc hideGeo ()
+{
+	string $panel = `getPanel  -wf`;
+	modelEditor -e -polymeshes (!`modelEditor -q -polymeshes $panel`) $panel;
+	modelEditor -e -nurbsCurves (!`modelEditor -q -nurbsCurves $panel`) $panel;
+	modelEditor -e -nurbsSurfaces (!`modelEditor -q -nurbsSurfaces $panel`) $panel;
+	modelEditor -e -subdivSurfaces (!`modelEditor -q -subdivSurfaces $panel`) $panel;
+	modelEditor -e -pluginObjects gpuCacheDisplayFilter (!`modelEditor -q -queryPluginObjects gpuCacheDisplayFilter $panel`) $panel;
+}
