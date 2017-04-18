@@ -4,7 +4,7 @@ rot: -16.717, -53.851, -19.812
 type: area
 size: 5,5
 color: 1.0, 1.0, 1.0
-texture: /job/cr/vault/vfx_image_sequence/asset/hdri_studio/softbox_hdri_1024x1024_ldn.cr.asset.1401/v001/tex/studio_softbox_v001_tex.0000.tex
+texture: studio_softbox_v001_tex.0000.tex
 intensity: 1.0
 exposure: 9.65
 Shadow Sample : 2
@@ -17,7 +17,7 @@ rot: 0, -90, 0
 type: area
 size: 5,5
 color: 1.0, 1.0, 1.0
-texture: /job/cr/vault/vfx_image_sequence/asset/hdri_studio/softbox_hdri_1024x1024_ldn.cr.asset.1401/v001/tex/studio_softbox_v001_tex.0000.tex
+texture: studio_softbox_v001_tex.0000.tex
 intensity: 1.0
 exposure: 9.6500
 Shadow Sample : 2
@@ -29,7 +29,7 @@ rot: -34.976, 0, 0
 type: area
 size: 5,5
 color: 1.0, 1.0, 1.0
-texture: /job/cr/vault/vfx_image_sequence/asset/hdri_studio/softbox_hdri_1024x1024_ldn.cr.asset.1401/v001/tex/studio_softbox_v001_tex.0000.tex
+texture: studio_softbox_v001_tex.0000.tex
 intensity: 1.0
 exposure: 8.650
 Shadow Sample : 2
@@ -41,7 +41,7 @@ rot: 0, 41.721 ,0
 type: area
 size: 15, 15
 color: 1.0, 1.0, 1.0
-texture: /job/cr/vault/vfx_image_sequence/asset/hdri_studio/softbox_hdri_1024x1024_ldn.cr.asset.1401/v001/tex/studio_softbox_v001_tex.0000.tex
+texture: studio_softbox_v001_tex.0000.tex
 intensity: 1.0
 exposure: 7.75
 Shadow Sample : 2
