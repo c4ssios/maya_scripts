@@ -62,7 +62,7 @@ Volume Sample : 2
 L010_chinaBall0001_CatF_LGT
 pos: 19.978, 13.554, 104.664
 rot: -179.804, -3.605, -3.031
-type: dome
+type: point
 radius : 10
 color: 1.0, 1.0, 1.0
 intensity: 1.0
