@@ -1,4 +1,4 @@
-L010_softBoxRambrant0001_CatA_LGT
+softBoxRambrant0001_CatA_LGT
 pos: -11.382, 26.079, 10.246
 rot: -16.717, -53.851, -19.812
 type: area
@@ -11,7 +11,7 @@ Shadow Sample : 2
 Volume Sample : 2
 
 
-L010_softBoxSplit0001_CatB_LGT
+softBoxSplit0001_CatB_LGT
 pos: -14, 18.325, -1.293
 rot: 0, -90, 0
 type: area
@@ -23,7 +23,7 @@ exposure: 9.6500
 Shadow Sample : 2
 Volume Sample : 2
 
-L010_softBoxButterfly0001_CatC_LGT
+softBoxButterfly0001_CatC_LGT
 pos: 0.278, 23.848, 11.73
 rot: -34.976, 0, 0
 type: area
@@ -35,7 +35,7 @@ exposure: 8.650
 Shadow Sample : 2
 Volume Sample : 2
 
-L010_softBoxFill0001_CatD_LGT
+softBoxFill0001_CatD_LGT
 pos: 11.775, 18.325, 11.314
 rot: 0, 41.721 ,0
 type: area
@@ -47,7 +47,7 @@ exposure: 7.75
 Shadow Sample : 2
 Volume Sample : 2
 
-L010_spot0001_CatE_LGT
+spot0001_CatE_LGT
 pos: 3.956, 18.654, -27.236
 rot: 174.959, 7.393, 179.179
 type: spot
@@ -59,7 +59,7 @@ exposure: 11
 Shadow Sample : 2
 Volume Sample : 2
 
-L010_chinaBall0001_CatF_LGT
+chinaBall0001_CatF_LGT
 pos: 19.978, 13.554, 104.664
 rot: -179.804, -3.605, -3.031
 type: point
