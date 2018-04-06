@@ -1,0 +1,62 @@
+- Initial Fracture :
+	- transform
+		- isoOffset
+		- scatter
+	- voronoifracture
+	- transform
+
+- Remove Small Pieces :
+	- groupdelete => outside, inside
+	- polysoup => merge identical vertices ON
+	- measure => type : volume
+	- blast => 	group : @volume<`chs("../volumeTreshold")`
+				groupType : Primitives
+	- convert => convert to : polygon
+	- attribdelete => primitives Attributes : volume
+
+
+Scale Variations :
+	- connectivity => 	Attribute : class
+						Local Variable : CLASS
+
+	- attribcreate =>	Number of Attributes : 2
+
+						Name : randomDEL
+						Local Variable : randomDEL
+						Class : Primitive
+						Type : Float
+						Precision : 32bit
+						Allow Local Vars : ON
+						Value : rand($CLASS)  / 0 / 0 / 0
+
+						Name : randomVariation
+						Local Variable : randomVariation
+						Class : Primitive
+						Type : Float
+						Precision : 32bit
+						Allow Local Vars : ON
+						value : ch("../randomSplit") / 0 / 0 / 0
+
+			delete => 	Operation : Delete Non-Selected										
+						Entity : Primitives
+						Operation : Delete by Expression
+						Filter Expression : $randomDEL - $randomVariation
+
+
+																delete => 	Operation : Delete Selected
+																			Entity : Primitives
+																			Operation : Delete by Expression
+																			Filter Expression : $randomDEL - $randomVariation
+
+																foreach_begin
+																transform => 	scale : fit(rand($PT), 0, 1,ch("../minx"), ch("../maxx"))
+																						fit(rand($PT), 0, 1,ch("../miny"), ch("../maxy"))
+																						fit(rand($PT), 0, 1,ch("../minz"), ch("../maxz"))
+
+																				pivot : $GCX  / $GCY / $GCZ
+
+																foreach_end => Piece Attribute : name
+
+			merge
+
+
