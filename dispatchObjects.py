@@ -20,16 +20,16 @@ def dispatchObjects():
 			Xvalues.append(abs(bbox[0]) + abs(bbox[3]))
 			Zvalues.append(abs(bbox[2]) + abs(bbox[5]))
 
-	columnIndex = int(math.sqrt(len(sel))) +1
+		columnIndex = int(math.sqrt(len(sel))) +1
 
-	moveValueX = max(Xvalues)*1.1
-	moveValueZ = max(Zvalues)*1.1
+		moveValueX = max(Xvalues)*1.1
+		moveValueZ = max(Zvalues)*1.1
 
-	for s in sel:
+		for s in sel:
 
-		index = sel.index(s)
-		rowIndex = int(index/ columnIndex)
+			index = sel.index(s)
+			rowIndex = int(index/ columnIndex)
 
-		cmds.xform(s, a=True, t=(index*moveValueX, 0, rowIndex*moveValueZ))
-		cmds.xform(s, r=True, t=(-(rowIndex*moveValueX*columnIndex), 0, 0))
+			cmds.xform(s, a=True, t=(index*moveValueX, 0, rowIndex*moveValueZ))
+			cmds.xform(s, r=True, t=(-(rowIndex*moveValueX*columnIndex), 0, 0))
 
