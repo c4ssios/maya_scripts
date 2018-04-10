@@ -22,8 +22,6 @@ def dispatchObjects():
 
 	columnIndex = int(math.sqrt(len(sel))) +1
 
-	print columnIndex
-
 	moveValueX = max(Xvalues)*1.1
 	moveValueZ = max(Zvalues)*1.1
 
