@@ -16,19 +16,3 @@ def multiOBJimporter():
         objName = fileName.split('.')
       
         cmds.file(elem, i=True, typ='OBJ', ra=True, mergeNamespacesOnClash=False, namespace=objName[0], options="mo=0")
-
-
-
-
-################## Recursive import #########################
-path = '/job/checkmate/reference/character/Strong/model/DRZ/20151222_Strong_All_Poses'
-fileString = 'RenderMesh.obj'
-############################################################
-
-for dirName, subdirList, fileList in os.walk(path):
-    for filename in fileList:
-        if 'RenderMesh.obj' in filename:
-            p=os.path.join(dirName,filename)
-            print 'importing ' + p
-           
-            cmds.file(p, i=True, typ='OBJ', ra=True, mergeNamespacesOnClash=False, namespace=filename, options="mo=0")
