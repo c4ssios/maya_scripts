@@ -1,0 +1,42 @@
+Remove small pieces :
+
+- Measure node : type => volume
+- Blast node :  Group => @volume<0.05
+
+#####################################
+
+Remove exterior pieces :
+
+=> after Voronoi Fracture
+
+- Compile_begin node
+- Foreach_begin node
+- Switch node + Null node connected into the Switch node : Select input : if(nprimsgroup(-1, "outside") != 0, 1, 0)
+- Foreach_end node
+- Compile_end node
+
+######################################
+
+To export multiple objects as ABC from packed primitives
+
+- Assemble node : Create Packed Geometry ON
+- in the Alembic OUT node : 
+	in Hierarchy Tab, Partition Mode => Use Attribute value
+	in Hierarchy Tab, Partition Attribute => "name"
+	in Geometry Tab, Packed Transform => Transform Geometry
+
+
+#######################################
+
+Random objects in a copy node
+
+- X numbers of objects connected to a Switch node.
+- Switch node (connected to Copy node left input):
+	=> Select Input : stamp("../copy1","rnd_index",0)
+
+- Grid Node
+- Attribute Wrangle (connected to Copy node right input) : 
+	VEXpression : i@rnd_index = int(fit01(rand(@ptnum),0,3));
+
+- Copy to Points node :
+	in Stamp Tab, Attribute Stamps : rnd_index
