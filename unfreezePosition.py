@@ -9,8 +9,13 @@ def unfreezePosition():
         if cmds.objectType(s, isType='transform')==0:
             cmds.warning(s+' is not a transformNode, skipped.')
         else:
-            worldPos = cmds.xform(s, rotatePivot=True,  q=True)
-            cmds.xform(s, translation=[-worldPos[0], -worldPos[1], -worldPos[2]])
+            localRotPivPos = cmds.xform(s, rotatePivot=True,  q=True)
+            worldPos = cmds.xform(s, translation=True, worldSpace=True, q=True)
+
+            x = localRotPivPos[0]+worldPos[0]
+            y = localRotPivPos[1]+worldPos[1]
+            z = localRotPivPos[2]+worldPos[2]
+            
+            cmds.xform(s, translation=[-x,-y,-z], relative=True )
             cmds.makeIdentity(s, apply=True, translate=True)
-            cmds.xform(s, translation=worldPos)
-    
+            cmds.xform(s, translation=[x,y,z], relative=True)
