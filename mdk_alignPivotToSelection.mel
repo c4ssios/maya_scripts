@@ -1,0 +1,90 @@
+global proc mdk_alignPivotToSelection( int $option )
+{
+	if ($option == 0)
+	{
+		ConvertSelectionToVertices;
+		string $vtxSel[] = `ls -sl -fl`;
+		string $selectedObjectStore[] = `ls -sl -l -o`;
+		$objectSelectionStore = `listRelatives -p -f $selectedObjectStore[0]`;
+		$objectGroupStore = `listRelatives -p -f $objectSelectionStore[0]`;
+
+		if (size($vtxSel) < 3)
+			error "Please select at least 3 Vertices, 2 Edges or 1 Face";
+
+		// create and align helperPlane
+		string $plane[] = `polyPlane -w 1 -h 1 -sx 1 -sy 1 -ax 0 1 0 -cuv 2 -ch 1 -n rotationPlane`;
+
+		select ( $plane[0] + ".vtx[0:2]") $vtxSel[0] $vtxSel[1] $vtxSel[2];
+		snap3PointsTo3Points(0);
+		
+		select $objectSelectionStore;
+		
+		// unparent object to world
+		if (`size ($objectGroupStore)` != 0)
+		$objectSelectionStore = `parent -world $objectSelectionStore[0]`;
+		
+	
+		// parent object to helperPlane
+		$objectSelectionStore = `parent $objectSelectionStore $plane[0]`;
+
+		// freeze transformations on object    
+		makeIdentity -apply true -t 0 -r 1 -s 0 -n 0 $objectSelectionStore;
+    
+		// unparent object
+		$objectSelectionStore = `parent -world $objectSelectionStore`;
+		
+		// parent back to original group
+		if (`size ($objectGroupStore)` != 0)
+		parent $objectSelectionStore $objectGroupStore;
+		
+		// cleanup
+		delete $plane;
+	}
+    
+	else if ($option == 1)
+	{
+		setToolTo Move;
+		float $getPivotPos[] = `manipMoveContext -m 2 -q -p Move`;  
+		ConvertSelectionToVertices;
+	    string $vtxSel[] = `ls -sl -fl`;
+		string $selectedObjectStore[] = `ls -sl -l -o`;
+		$objectSelectionStore = `listRelatives -p -f $selectedObjectStore[0]`;
+		$objectGroupStore = `listRelatives -p -f $objectSelectionStore[0]`;
+
+		if (size($vtxSel) < 3)
+			error "Please select at least 3 Vertices, 2 Edges or 1 Face";
+
+		// create and align helperPlane
+		string $plane[] = `polyPlane -w 1 -h 1 -sx 1 -sy 1 -ax 0 1 0 -cuv 2 -ch 1 -n rotationPlane`;
+
+		select ( $plane[0] + ".vtx[0:2]") $vtxSel[0] $vtxSel[1] $vtxSel[2];
+		snap3PointsTo3Points(0);
+		
+		select $objectSelectionStore;
+		
+		// unparent object to world
+		if (`size ($objectGroupStore)` != 0)
+		$objectSelectionStore = `parent -world $objectSelectionStore[0]`;
+		
+	    // parent object to helperPlane
+		$objectSelectionStore = `parent $objectSelectionStore $plane[0]`;
+
+		// freeze transformations on object    
+		makeIdentity -apply true -t 0 -r 1 -s 0 -n 0 $objectSelectionStore;
+
+		// move pivot3
+		xform -ws -piv $getPivotPos[0] $getPivotPos[1] $getPivotPos[2];
+
+		// unparent object
+		$objectSelectionStore = `parent -world $objectSelectionStore`;
+		
+		// parent back to original group
+		if (`size ($objectGroupStore)` != 0)
+		parent $objectSelectionStore $objectGroupStore;
+		
+		// cleanup
+		delete $plane;
+	}
+}
+
+mdk_alignPivotToSelection(1);
