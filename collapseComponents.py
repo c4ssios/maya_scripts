@@ -5,8 +5,10 @@
 #==============================================================================
 
 import maya.cmds as cmds
-from functools import partial
 import maya.mel as mel
+from functools import partial
+import makePlanar
+
 
 __title__ = "Collapse Components"
 __version__ = '0.1'
@@ -61,6 +63,11 @@ def collapseComponents(axis, *args):
 				cmds.move(alignValue,v, z=True, absolute=True)
 
 
+def collapseOnNormalsAVG(*args):
+
+	makePlanar.IMakePlanar()
+
+
 def collapseComponentsUI():
 	'''
 	Create UI Window
@@ -97,7 +104,7 @@ def collapseComponentsUI():
 	cmds.setParent(upLevel=True )
 
 	cmds.separator( height=20, style='double' )
-	cmds.button('normals_button', label='Normals Average')
+	cmds.button('normals_button', label='Normals Average', command=collapseOnNormalsAVG)
 	cmds.separator( height=20, style='double' )
 
 	cmds.button( label='Close', height=30, command=('cmds.deleteUI(\"' + window + '\", window=True)') )
