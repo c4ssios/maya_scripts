@@ -190,18 +190,41 @@ def cycloGeoCreation(namespace, name):
 	cmds.setAttr(cycloShader+'.color', 0.9, 0.9, 0.9, type='double3')
 	cmds.sets(namespace+':'+name, e=True, forceElement=cycloShaderSG)
 
+	activateSmoothPreview(namespace+':'+name)
+
 
 def createAndAssignShaders(namespace, objects):
 
 	objectList = cmds.listRelatives(objects, typ='mesh', ad=True, f=True)
 	
-	shader = cmds.shadingNode('blinn', name=namespace+':'+'turntable_MAT', asShader=True)
-	shaderSG = cmds.sets(name=namespace+':'+'turntable_MAT_SG', empty=True, renderable=True, noSurfaceShader=True)
-	cmds.connectAttr(shader+'.outColor', shaderSG+'.surfaceShader')
-	cmds.setAttr(shader+'.color', 0.35, 0.35, 0.35, type='double3')
+	'''
+	default grey Shader
+	'''
+	defaultShader = cmds.shadingNode('blinn', name=namespace+':'+'turntable_MAT', asShader=True)
+	defaultShaderSG = cmds.sets(name=namespace+':'+'turntable_MAT_SG', empty=True, renderable=True, noSurfaceShader=True)
+	cmds.connectAttr(defaultShader+'.outColor', defaultShaderSG+'.surfaceShader')
+	cmds.setAttr(defaultShader+'.color', 0.35, 0.35, 0.35, type='double3')
+
+
+	'''
+	glass Shader
+	'''
+	glassShader = cmds.shadingNode('blinn', name=namespace+':'+'glassTurntable_MAT', asShader=True)
+	glassShaderSG = cmds.sets(name=namespace+':'+'glassTurntable_MAT_SG', empty=True, renderable=True, noSurfaceShader=True)
+	cmds.connectAttr(glassShader+'.outColor', glassShaderSG+'.surfaceShader')
+	cmds.setAttr(glassShader+'.color', 0, 0, 0, type='double3')
+	cmds.setAttr(glassShader+'.specularColor', 1, 1, 1, type='double3')
+	cmds.setAttr(glassShader+'.transparency', 1, 1, 1, type='double3')
+	cmds.setAttr(glassShader+'.reflectedColor', 0.084, 0.084, 0.084, type='double3')
+	cmds.setAttr(glassShader+'.eccentricity', 0.266)
+	cmds.setAttr(glassShader+'.specularRollOff', 0.720)
+
 
 	for o in objectList:
-		cmds.sets(o, e=True, forceElement=shaderSG)
+		if 'glass' in o:
+			cmds.sets(o, e=True, forceElement=glassShaderSG)
+		else:
+			cmds.sets(o, e=True, forceElement=defaultShaderSG)
 
 
 def getPanelFromCamera(cameraName):
@@ -224,7 +247,7 @@ def activateSmoothPreview(model):
 
 def setSpinAnim(obj, firstFrame, lastFrame):
 		cmds.setKeyframe(obj, at='rotateY', ott='linear', t=firstFrame, v=0)
-		cmds.setKeyframe(obj, at='rotateY', itt='linear', t=lastFrame, v=360)
+		cmds.setKeyframe(obj, at='rotateY', itt='linear', t=lastFrame, v=-360)
 
 
 
