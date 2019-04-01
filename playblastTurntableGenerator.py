@@ -2,9 +2,6 @@ import maya.cmds as cmds
 import maya.mel as mel
 
 
-lightRigFilePath = '/servers/Home/nleblanc/maya/projects/default/scenes/modelPresentation_lightRig02.ma'
-shaderLibFilePath = '/servers/Home/nleblanc/maya/projects/default/scenes/modelPresentation_shaderLib02.ma'
-
 def playblastTurntableGenerator():
 
 	model = cmds.ls(sl=True, l=True)
@@ -157,7 +154,7 @@ def playblastTurntableGenerator():
 
 def cycloGeoCreation(namespace, name):
 
-	pp1 = [-12, -2.6394186146319176e-15, 6.964383125305176]
+	pp1 = [-12, -2.6394186146319176e-15, 11]
 	pp2 = [-12, 15.735990524291992, -7.29987907409668]
 	pp3 = [-12, -2.6394186146319176e-15, -4.922739028930664]
 	pp4 = [-12, 0.18094894289970398, -5.832431793212891]
@@ -169,8 +166,9 @@ def cycloGeoCreation(namespace, name):
 	pp10 = [-12, 5.716851234436035, -7.29987907409668]
 	pp11 = [-12, -2.6394186146319176e-15, -0.9603691101074219]
 	pp12 = [-12, -2.6394186146319176e-15, 3.002007007598877]
+	pp13 = [-12, -2.6394186146319176e-15, 7]
 
-	cmds.curve(n=namespace+':tempCurve', d=1, p=[pp1, pp12, pp11, pp3 ,pp4, pp5, pp6, pp7,pp10, pp9,  pp8, pp2])
+	cmds.curve(n=namespace+':tempCurve', d=1, p=[pp1, pp13,  pp12, pp11, pp3 ,pp4, pp5, pp6, pp7,pp10, pp9,  pp8, pp2])
 	cmds.extrude(namespace+':tempCurve', ch=True, rn=False, po=1, et=0, upn=0, d=[1,0,0], length=24, scale=1, dl=1, n=namespace+':'+name)
 	tesselateNode = cmds.listHistory(namespace+':'+name, pdo=True)[0]
 
