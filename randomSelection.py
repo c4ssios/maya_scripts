@@ -3,29 +3,43 @@ import random
 
 
 __title__ = "Random Choice From Selection"
-__version__ = '0.1'
+__version__ = '0.15'
 __author__ = "Nicolas Leblanc"
-__company__ = ""
+__company__ = "Dwarf Animation"
 __maintainer__ = "Nicolas Leblanc"
-__email__ = "c4ssios@gmail.com"
+__email__ = "nicolas.leblanc@dwarfanimation.com"
 
 
-def randomChoiceSelection(*args):
+initialSel = []
 
-	sel = cmds.ls(sl=True, fl=True, l=True)
-	percentage = cmds.floatField('percentage_floatField', q=True, value=True)
 
-	if len(sel)==0:
+def randomChoiceSelection(selection, number):
+
+	if len(selection)==0:
 		cmds.warning('Nothing is selected.')
 
-	if len(sel)==1:
+	if len(selection)==1:
 		cmds.warning('You must select more than one thing.')
 
-	if len(sel)>1:
+	if len(selection)>1:
 
-		newSel = random.sample(sel, int(len(sel)*percentage/100))
+		newSel = random.sample(selection, number)
 		cmds.select(newSel, r=True)
+		cmds.button('reseed_button', edit=True, enable=True)
 
+
+def selectRandomChoiceTrigger(*args):
+	sel = cmds.ls(sl=True, fl=True, l=True)
+	global initialSel
+	initialSel = sel
+	percentage = cmds.floatField('percentage_floatField', q=True, value=True)
+	number = int(len(sel)*percentage/100)
+	randomChoiceSelection(sel, number)
+
+
+def reseedRandomTrigger(*args):
+	sel = cmds.ls(sl=True, fl=True, l=True)
+	randomChoiceSelection(initialSel, len(sel))
 
 
 def randomSelectionUI():
@@ -53,7 +67,10 @@ def randomSelectionUI():
 
 
 	cmds.separator( height=5, style='none' )
-	cmds.button(label='Select', height=50, command=randomChoiceSelection)
+	cmds.button('select_button', label='Select', height=30, command=selectRandomChoiceTrigger)
+
+	cmds.separator( height=5, style='none')
+	cmds.button('reseed-button', label='Reseed', height=30, enable=False, command=reseedRandomTrigger)
 
 	cmds.separator( height=20, style='double' )
 
