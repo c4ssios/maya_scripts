@@ -1,224 +1,216 @@
 stone:
   base : 0.8
   baseColor: color
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.65
 
 paint:
   base: 0.8
   baseColor: color
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.25
   coat: 0.25
-  coatColor: [1, 1, 1]
+  coatColor: [1.0, 1.0, 1.0]
   coatRoughness: 0.1
   coatIOR: 1.52
 
 metal:
   base : 0.8
   baseColor : color
-  metalness: 1
-  specular: 1
-  specularColor: [1, 1, 1]
+  metalness: 1.0
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.4
 
 wood:
-  base : 1
+  base : 1.0
   baseColor: color
   diffuseRoughness: 0.3
   specular: 0.35
-  specularColor: [1, 1, 1]
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.68
 
 plastic:
-  base : 1
+  base : 1.0
   baseColor : color
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.38
   subsurface: 0.2
   subsurfaceColor: color
-  subsurfaceRadius: [1, 1, 1]
-  subsurfaceScale: 1
+  subsurfaceRadius: [1.0, 1.0, 1.0]
+  subsurfaceScale: 1.0
 
 rubber:
-  base : 1
+  base : 1.0
   baseColor : color
-  diffuseRoughness: 1
-  metalness: 0
-  specular: 1
-  specularColor: [1, 1, 1]
+  diffuseRoughness: 1.0
+  metalness: 0.0
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.6
   specularAnisotropy : 0.5
 
 cloth:
   base : 0.8
   baseColor: color
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.693
   specularAnisotropy: 0.188
 
 glass:
-  base : 0
-  baseColor : [1, 1, 1]
-  diffuseRoughness: 0
-  specular: 1
-  specularColor: [1, 1, 1]
-  specularRoughness: 0
+  base : 0.0
+  baseColor : [1.0, 1.0, 1.0]
+  diffuseRoughness: 0.0
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
+  specularRoughness: 0.0
   specularAnisotropy : 0.5
-  transmission: 1
+  transmission: 1.0
   transmissionColor: color
 
 ceramic:  
-  base : 1
+  base : 1.0
   baseColor : color
-  specular: 1
-  specularColor: [1, 1, 1]
-  specularRoughness: 0
-  transmission: 1
-  transmissionColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
+  specularRoughness: 0.0
   subsurface: 0.1
   subsurfaceColor: color
-  subsurfaceRadius: [1, 1, 1]
-  subsurfaceScale: 1
+  subsurfaceRadius: [1.0, 1.0, 1.0]
+  subsurfaceScale: 1.0
 
 skin:
-  base : 0
-  baseColor : [1, 1, 1]
-  specular: 1
-  specularColor: [1, 1, 1]
+  base : 0.0
+  baseColor : [1.0, 1.0, 1.0]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.5
   specularIOR: 1.33
-  subsurface: 1
+  subsurface: 1.0
   subsurfaceColor: color
-  subsurfaceRadius: (color)/1.5
-  subsurfaceScale: 1
+  subsurfaceRadius: color/1.5
+  subsurfaceScale: 1.0
 
 hair:
-  base : 0
-  specular: 1
+  base : 0.0
+  specular: 1.0
   specularColor: color
   specularRoughness: 0.623
-  specularIOR: 5
+  specularIOR: 5.0
   specularAnisotropy: 0.2
   coat: 0.2
   coatColor: color
   coatRoughness: 0.35
 
 nail:
-  base : 0
-  specular: 1
-  specularColor: [1, 1, 1]
+  base : 0.0
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.58
-  subsurface: 1
+  subsurface: 1.0
   subsurfaceColor: color
-  subsurfaceRadius: (color)/1.5
-  subsurfaceScale: 1
+  subsurfaceRadius: color/1.5
+  subsurfaceScale: 1.0
 
 bone:
-  base : 1
+  base : 1.0
   baseColor: color
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.65
   subsurface: 0.5
-  subsurfaceColor: (color)/2
-  subsurfaceRadius: [1, 1, 1]
-  subsurfaceScale: 1
+  subsurfaceColor: color/2
+  subsurfaceRadius: [1.0, 1.0, 1.0]
+  subsurfaceScale: 1.0
 
 polysterene:
-  base : 1
-  baseColor: [1, 1, 1]
+  base : 1.0
+  baseColor: [1.0, 1.0, 1.0]
   diffuseRoughness: 0.5
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.7
 
 liquid:
   base: 0.5
-  baseColor: [1, 1, 1]
-  specular: 1
-  specularColor: [1, 1, 1]
+  baseColor: [1.0, 1.0, 1.0]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.12
   specularIOR: 1.333
-  transmission: 1
+  transmission: 1.0
   transmissionColor: color
 
 leather:
   base: 0.5
   baseColor: color
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.55
   subsurface: 0.5
   subsurfaceColor: color
-  subsurfaceRadius: [1, 1, 1]
-  subsurfaceScale: 1
+  subsurfaceRadius: [1.0, 1.0, 1.0]
+  subsurfaceScale: 1.0
   coat: 0.2
-  coatColor: [1, 1, 1]
+  coatColor: [1.0, 1.0, 1.0]
   coatRoughness: 0.35
   coatIOR: 1.33
 
 default:
   base : 0.8
   baseColor: color
-  specular: 0
-  specularColor: [1, 1, 1]
+  specular: 0.0
+  specularColor: [1.0, 1.0, 1.0]
 
 paper:
-  base : 1
+  base : 1.0
   baseColor: color
   diffuseRoughness: 0.5
   specular: 0.35
-  specularColor: [1, 1, 1]
-  specularRoughness: 68
+  specularColor: [1.0, 1.0, 1.0]
+  specularRoughness: 0.68
   subsurface: 0.2
   subsurfaceColor: [0.459, 0.373, 0.243]
-  subsurfaceRadius: [1, 1, 1]
-  subsurfaceScale: 1
+  subsurfaceRadius: [1.0, 1.0, 1.0]
+  subsurfaceScale: 1.0
 
 felt:
   base : 0.8
-  baseColor : color1
+  baseColor : color
   specular: 0.35
-  specularColor: [1, 1, 1]
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.7
   sheen: 0.25
   sheenColor: [0.537037, 0.40141, 0.19763]
   sheenRoughness: 0.3
 
 light: 
-  base : 0
+  base : 0.0
   specular: 0.1
   specularColor: [1, 1, 1]
   specularRoughness: 0.1
-  emission: 1
+  emission: 1.0
   emissionColor: color
 
 concrete: 
-  base : 1
-  baseColor: baseColor
+  base : 1.0
+  baseColor: color
   diffuseRoughness: 0.2
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.7
 
 plant:
-  base : 1
+  base : 1.0
   baseColor: color
-  specular: 1
-  specularColor: [1, 1, 1]
+  specular: 1.0
+  specularColor: [1.0, 1.0, 1.0]
   specularRoughness: 0.5
-  transmission: 1
-  transmissionColor: [1, 1, 1]
   subsurface: 0.5
-  subsurfaceColor: (color)*1.2
-  subsurfaceRadius: [1, 1, 1]
-  subsurfaceScale: 1
-  coat: 0.1
-  coatColor: [1, 1, 1]
-  coatRoughness: 0.25
-  coatIOR: 1.33
+  subsurfaceColor: color*1.2
+  subsurfaceRadius: [1.0, 1.0, 1.0]
+  subsurfaceScale: 1.0
