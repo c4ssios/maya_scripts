@@ -50,44 +50,74 @@ def preSurfaceObjects():
 		for o in offenders:
 			objects.remove(o)
 	
-	uniqueMat=[]
+	if len(objects)==0:
+		cmds.warning('Cant find any object name with material information.')
 
-	for obj in objects:
-		objShortName=obj.split('|')[-1]
-		objectMaterialName = objShortName.split('_')[0]
-		if objectMaterialName not in uniqueMat:
-			uniqueMat.append(objectMaterialName)
+	else:
 
+		uniqueMat=[]
 
-	#Arnold Material Creation
+		for obj in objects:
+			objShortName=obj.split('|')[-1]
+			objectMaterialName = objShortName.split('_')[0]
 
-	for m in uniqueMat:
+			materialName = objectMaterialName + '_MAT'
+			materialSGName = materialName + '_SG'
 
-		color = camelCaseSplit(m)[1].lower()
-		materialType = camelCaseSplit(m)[0]
-
-		materialName = m + '_MAT'
-
-		if cmds.objExists(materialName):
-			cmds.delete(materialName)
-		if cmds.objExists(materialName+'_SG'):
-			cmds.delete(materialName+'_SG')
+			if objectMaterialName not in uniqueMat:
+				uniqueMat.append(objectMaterialName)
+				createMaterial(objectMaterialName, materialName, materialSGName)
+			
+ 
+			cmds.sets(obj, e=True, forceElement=materialSGName)
 
 
-		material = cmds.shadingNode('aiStandardSurface', asShader=True, n=materialName)
-		materialSG = cmds.sets(name=materialName+'_SG', empty=True, renderable=True, noSurfaceShader=True)
-		cmds.connectAttr(material+'.outColor', materialSG+'.surfaceShader')
+
+def createMaterial(material, materialName, shadingGroupName):
 
 
-		colorPreset = open(colorPresetFile, 'r')
-		colorPresetParsed = yaml.load(colorPreset)
+	color = camelCaseSplit(material)[1].lower()
+	materialType = camelCaseSplit(material)[0]
 
-		arnoldMaterialPreset = open(arnoldMaterialPresetFile, 'r')
-		arnoldMaterialParsed = yaml.load(arnoldMaterialPreset)
 
-		for attribute in arnoldMaterialParsed[materialType]:
-			#print arnoldMaterialParsed[materialType][attribute]
-			cmds.setAttr(materialName+'.'+)
-			#cmds.setAttr(materialName+'.baseColor', colorPresetParsed[color]['r'], colorPresetParsed[color]['g'], colorPresetParsed[color]['b'],type='double3')
+	if cmds.objExists(materialName):
+		cmds.delete(materialName)
+	if cmds.objExists(shadingGroupName):
+		cmds.delete(shadingGroupName)
+
+
+	material = cmds.shadingNode('aiStandardSurface', asShader=True, n=materialName)
+	materialSG = cmds.sets(name=shadingGroupName, empty=True, renderable=True, noSurfaceShader=True)
+	cmds.connectAttr(material+'.outColor', shadingGroupName + '.surfaceShader')
+
+
+	colorPreset = open(colorPresetFile, 'r')
+	colorPresetParsed = yaml.load(colorPreset)
+
+	arnoldMaterialPreset = open(arnoldMaterialPresetFile, 'r')
+	arnoldMaterialParsed = yaml.load(arnoldMaterialPreset)
+
+	for attribute in arnoldMaterialParsed[materialType]:
+		attrValue = arnoldMaterialParsed[materialType][attribute]
+
+
+		if type(attrValue)==str:
+			colorValues =  [colorPresetParsed[color]['r'], colorPresetParsed[color]['g'], colorPresetParsed[color]['b']]
+
+			if attrValue.split('color')[1]:
+				operation = attrValue.split('color')[1][:1]
+				factor = attrValue.split(operation)[-1]
+
+				for v in colorValues:
+					colorValues[colorValues.index(v)] = eval(str(v) + str(operation) + str(factor) )
+
+			cmds.setAttr(materialName + '.' +attribute, colorValues[0], colorValues[1], colorValues[2], type='double3')
+
+
+		if type(attrValue)==list:
+			cmds.setAttr(materialName+'.'+ attribute ,attrValue[0], attrValue[1], attrValue[2], type='double3')
+
+		if type(attrValue)==float:
+			cmds.setAttr(materialName+'.'+ attribute, attrValue)
 
 
