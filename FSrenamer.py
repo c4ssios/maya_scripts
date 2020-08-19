@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #title           :FSrenamer.py
 #description     :Renamer tool for modelling department using Framestore naming convention.
-#date            :20161018
+#date            :20200819
 #==============================================================================
 
 
@@ -13,7 +13,7 @@ import time
 
 
 __title__ = "FS Renamer"
-__version__ = '0.71'
+__version__ = '1.0'
 __author__ = "Nicolas Leblanc"
 __company__ = "Framestore"
 __maintainer__ = "Nicolas Leblanc"
@@ -103,6 +103,36 @@ def renameSelection(*args):
 			displayResult(numInSel, startTime, endTime)
 
 
+def listNamespaces():
+	'''
+	List All namespaces in the scene
+	'''
+	cmds.namespace(setNamespace=':')
+	namespaces = cmds.namespaceInfo(':', listOnlyNamespaces=True, r=True)
+	for d in ('UI', 'shared'):
+	    if d in namespaces:
+	        namespaces.remove(d)
+
+	return namespaces
+
+
+def removeSelectedNamespaces(*args):
+
+	selectedNamespaces = cmds.textScrollList( "namespaces_list", query=True, selectItem=True)
+
+	for n in selectedNamespaces:
+		cmds.namespace(mergeNamespaceWithRoot=True, removeNamespace=n)
+		print 'Namespace ' + n + ' removed.'
+
+	cmds.textScrollList("namespaces_list",edit=True, removeAll=True)
+	displayNamespacesList()
+
+
+	if cmds.window( 'namespaceEditor' ,exists=True):
+		mel.eval('updateNamespaceEditor;')
+
+
+
 def removeAllNamespaces(*args):
 	'''
 	Remove All namespaces in the scene
@@ -122,8 +152,12 @@ def removeAllNamespaces(*args):
 	    	else:
 	    		namespaces = cmds.namespaceInfo(':', listOnlyNamespaces=True, r=True)
 
+	cmds.textScrollList("namespaces_list",edit=True, removeAll=True)
+	displayNamespacesList()
+
 	if cmds.window( 'namespaceEditor' ,exists=True):
 		mel.eval('updateNamespaceEditor;')
+
 
 
 def convertToLetter(value):
@@ -260,7 +294,6 @@ def searchAndReplace(*args):
 			cmds.warning('Nothing to rename.')
 
 
-
 def displayResult(num, start, end):
 
 	outputMessage = str(num) + ' objects renamed in ' + str(end-start) + ' sec.'
@@ -309,15 +342,21 @@ def renameProgressBar(numberOfObj):
 	cmds.columnLayout()
 	cmds.progressBar('renameProgress_progressBar',minValue=0, maxValue=numberOfObj, width=300, height=40)
 	cmds.showWindow(progressBarWindow)
+
+
+def displayNamespacesList():
+	namespaces = listNamespaces()
+	for name in namespaces:
+		cmds.textScrollList('namespaces_list', edit=True, append=name)
 	
 	
-def FSRenamerUI():
+def FSrenamerUI():
 	'''
 	Create UI Window
 	'''
 	# Size Parameters
 
-	windowWidth = 520
+	windowWidth = 540
 	windowHeight = 300
 	paddingFrameSize = 116
 	materialSize = 80
@@ -331,6 +370,8 @@ def FSRenamerUI():
 	searchInputSize = 300
 	prefixSize = 80
 	prefixInputSize = 150
+	frameLayoutMargin = 10
+	namespaceButtonSize = 200
 
 	#Color
 	frame_bgc = [0.18, 0.18, 0.18]
@@ -338,7 +379,7 @@ def FSRenamerUI():
 	
 	# Parameters Lists
 
-	materialList = ['stone','paint','metal','wood','plastic','rubber','cloth','glass','ceramic','skin','hair','nail','bone','liquid','polysterene','leather','default','paper','hrsi','felt','lrsi','frsi','rcc']
+	materialList = ['stone','paint','metal','wood','plastic','rubber','cloth','glass','ceramic','skin','hair','nail','bone','liquid','polysterene','leather','default','paper','hrsi','felt','lrsi','frsi','rcc','light','plant']
 	materialList.sort()
 	colorList = ['Grey','Black','White','Yellow','Red','Green','Blue','Orange','Purple','Brown','Pink','Colour','Light','Clear','Mixed']
 	colorList.sort()
@@ -360,7 +401,7 @@ def FSRenamerUI():
 	Search and Replace
 	'''
 
-	cmds.frameLayout(label="Search and Replace", collapsable=True, collapse=True, bgc=frame_bgc)
+	cmds.frameLayout(label="Search and Replace", collapsable=True, collapse=True, marginWidth=frameLayoutMargin, bgc=frame_bgc)
 	cmds.separator( height=5, style='none' )
 
 	cmds.rowLayout(numberOfColumns=2)
@@ -392,7 +433,7 @@ def FSRenamerUI():
 	Prefix and Suffix
 	'''
 
-	cmds.frameLayout(label="Prefix and Suffix", collapsable=True, collapse=True, bgc=frame_bgc)
+	cmds.frameLayout(label="Prefix and Suffix", collapsable=True, collapse=True,  marginWidth=frameLayoutMargin, bgc=frame_bgc)
 	cmds.separator( height=5, style='none' )
 
 	cmds.rowLayout(numberOfColumns=3)
@@ -417,20 +458,34 @@ def FSRenamerUI():
 	Namespaces Utilities
 	'''
 
-	cmds.frameLayout(label="Namespace Utilities", collapsable=True, collapse=True, bgc=frame_bgc)
+	cmds.frameLayout(label="Namespace Utilities", collapsable=True, collapse=True, marginWidth=frameLayoutMargin, bgc=frame_bgc)
 	cmds.separator( height=5, style='none' )
-	cmds.button('removeSelectedNamespaces_button', label='Remove Selected Namespaces', enable=False)
-	cmds.button('removeAllNamespaces_button', label='Remove All Namespaces', command=removeAllNamespaces)
+
+	cmds.rowLayout(numberOfColumns=2)
+
+	cmds.columnLayout(rowSpacing=5)
+	cmds.textScrollList('namespaces_list',allowMultiSelection=True, height=150, width=360)
+
+	displayNamespacesList()
+
+	cmds.setParent(upLevel=True)
+
+	cmds.columnLayout(rowSpacing=5)
+	cmds.button('removeSelectedNamespaces_button', label='Remove Selected Namespaces', width=namespaceButtonSize, command=removeSelectedNamespaces)
+	cmds.button('removeAllNamespaces_button', label='Remove All Namespaces', width=namespaceButtonSize, command=removeAllNamespaces)
+	cmds.setParent(upLevel=True)
+	cmds.setParent(upLevel=True)
+
+	
 	cmds.separator( height=5, style='none' )
 	cmds.setParent(upLevel=True)
-	
-		
 
+	
 	'''
 	Lettering and numbering
 	'''
 
-	cmds.frameLayout(label="Padding", collapsable=True, collapse=False, bgc=frame_bgc)
+	cmds.frameLayout(label="Padding", collapsable=True, collapse=False, marginWidth=frameLayoutMargin, bgc=frame_bgc)
 	cmds.separator( height=5, style='none' )
 
 	cmds.rowLayout(numberOfColumns=4)
@@ -455,7 +510,7 @@ def FSRenamerUI():
 	Renaming input fields
 	'''
 
-	cmds.frameLayout(label="Renaming Input Fields", collapsable=True, collapse=False, bgc=frame_bgc)
+	cmds.frameLayout(label="Renaming Input Fields", collapsable=True, collapse=False, marginWidth=frameLayoutMargin, bgc=frame_bgc)
 	cmds.separator( height=10, style='none' )
 
 
