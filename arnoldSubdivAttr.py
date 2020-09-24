@@ -5,25 +5,70 @@
 #==============================================================================
 
 import maya.cmds as cmds
+import maya.mel as mel
+from functools import partial
+
 
 __title__ = "Arnold Subdivision Attributes"
-__version__ = "0.1"
+__version__ = "1.0"
 __author__ = "Nicolas Leblanc"
 __company__ = "Home"
 __maintainer__ = "Nicolas Leblanc"
 __email__ = "c4ssios@gmail.com"
 
 
-def applyAttributes(*args):
-	print collectingAttributesValues()
+def triggerApplyAttr(*args):
+
+	applyTo = cmds.optionMenu("applyTo_menu", q=True, v=True)
+
+	if applyTo=="Current Selection":
+		objectsList = cmds.ls(sl=True, l=True)
+		if len(objectsList)==0:
+			cmds.warning("Nothing is selected.")
+
+		else:
+			meshes = cmds.listRelatives(objectsList, c=True, typ="mesh", fullPath=True)
+			for m in meshes:
+				applyAttributes(m)
+
+	else:
+		objectsList = cmds.ls(applyTo, l=True)
+		
+		if len(objectsList)==0:
+			cmds.warning("Nothing to apply attributes on.")
+
+		else:
+			meshes = cmds.listRelatives(objectsList, c=True, typ="mesh", fullPath=True)
+			for m in meshes:
+				applyAttributes(m)
+
+
+def applyAttributes(shape):
+	
+	attributeValues = collectingAttributesValues()
+	
+	cmds.setAttr(shape+".aiSubdivType", attributeValues[0]-1)
+	cmds.setAttr(shape+".aiSubdivIterations", attributeValues[1])
+	cmds.setAttr(shape+".aiSubdivAdaptiveMetric", attributeValues[2]-1)
+	cmds.setAttr(shape+".aiSubdivPixelError", attributeValues[3])
+	cmds.setAttr(shape+".aiSubdivAdaptiveSpace", attributeValues[4]-1)
+	cmds.setAttr(shape+".aiSubdivUvSmoothing", attributeValues[5]-1)
+	cmds.setAttr(shape+".aiSubdivSmoothDerivs", attributeValues[6])
+	cmds.setAttr(shape+".aiSubdivFrustumIgnore", attributeValues[7])
+
+	cmds.setAttr(shape+".aiDispHeight", attributeValues[8])
+	cmds.setAttr(shape+".aiDispPadding", attributeValues[9])
+	cmds.setAttr(shape+".aiDispZeroValue", attributeValues[10])
+	cmds.setAttr(shape+".aiDispAutobump", attributeValues[11])
+
 
 def collectingAttributesValues():
-	typeInput = cmds.optionMenu('subdivType_menu', q=True, v=True)
+	typeInput = cmds.optionMenu('subdivType_menu', q=True, sl=True)
 	iterationsInput = cmds.intSliderGrp('iterations_slider', q=True, v=True)
-	adaptativeMetricInput = cmds.optionMenu('adaptativeMetric_menu', q=True, v=True)
+	adaptativeMetricInput = cmds.optionMenu('adaptativeMetric_menu', q=True, sl=True)
 	adaptativeErrorInput = cmds.floatSliderGrp('adaptativeError_slider', q=True, v=True)
-	adaptativeSpaceInput = cmds.optionMenu('adaptativeSpace_menu', q=True, v=True)
-	uvSmoothingInput = cmds.optionMenu('uvSmoothing_menu', q=True, v=True)
+	adaptativeSpaceInput = cmds.optionMenu('adaptativeSpace_menu', q=True, sl=True)
+	uvSmoothingInput = cmds.optionMenu('uvSmoothing_menu', q=True, sl=True)
 	smoothTangentInput = cmds.checkBox('smoothTangent_checkbox', q=True, v=True)
 	ignoreFrustumInput = cmds.checkBox('ignoreFrustum_checkbox', q=True, v=True)
 	heightInput = cmds.floatField("height_floatField", q=True, v=True)
@@ -144,7 +189,7 @@ def arnoldSubdivUI():
 	cmds.separator( height=20, style='double')
 
 	cmds.rowLayout(numberOfColumns=2)
-	cmds.button(label="Apply To", height=50, width=250, command=applyAttributes)
+	cmds.button(label="Apply To", height=50, width=250, command=triggerApplyAttr)
 	cmds.optionMenu('applyTo_menu')
 	for a in applyToList:
 		cmds.menuItem(label=a)
