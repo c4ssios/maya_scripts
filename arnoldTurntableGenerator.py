@@ -123,7 +123,7 @@ def arnoldTurntableGenerator():
 		cmds.setAttr('colorJitter_default.typeSwitch', 2)
 		cmds.setAttr('colorJitter_default.objGainMin', -0.03)
 		cmds.setAttr('colorJitter_default.objGainMax', 0.03)
-		cmds.setAttr('colorJitter_default.input', 0.22,0.22,0.22, type="double3")
+		cmds.setAttr('colorJitter_default.input', 0.18,0.18,0.18, type="double3")
 		cmds.ToggleAttributeEditor()
 
 		cmds.setAttr(materialList[0]+'.specularRoughness', 0.5)
@@ -134,11 +134,11 @@ def arnoldTurntableGenerator():
 		'''
 		Setting Up Glass Material Attributes
 		'''
-		cmds.setAttr(materialList[1]+'.specular', 0)
-		cmds.setAttr(materialList[1]+'.specularIOR', 1)
+
+		cmds.setAttr(materialList[1]+'.specularIOR', 1.52)
+		cmds.setAttr(materialList[1]+'.specularRougness', 0)
 		cmds.setAttr(materialList[1]+'.transmission', 1)
-		cmds.setAttr(materialList[1]+'.coat', 1)
-		cmds.setAttr(materialList[1]+'.coatRoughness', 0)
+		cmds.setAttr(materialList[1]+'.thinWalled', 1)
 
 
 		'''
