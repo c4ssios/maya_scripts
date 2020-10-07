@@ -3,6 +3,14 @@ import maya.mel as mel
 import mtoa.utils
 from mtoa.core import createOptions
 
+
+"""
+Load MTOA plugin if not present
+"""
+if cmds.renderer("arnold", exists=True)==0:
+	cmds.loadPlugin("mtoa.so")
+
+
 '''
 Create Arnold Render Options nodes
 '''
@@ -16,6 +24,7 @@ iblFilePath = '/servers/Departments/LIGHTING/maw/GREG/Turntable/sourceImages/ibl
 cycloGeoFilePath = '/servers/RHS/DEV/nleblanc/dad/turntable/geo/cyclo_v003.abc'
 camPropsFilePath = '/servers/RHS/DEV/nleblanc/dad/turntable/geo/props_cam.abc'
 macBethFilePath = '/servers/RHS/DEV/nleblanc/dad/turntable/sourceimages/macBeth_1k.tx'
+dadGeoFilePath = '/servers/RHS/DEV/nleblanc/dad/turntable/geo/dad_v001.abc'
 
 
 '''
@@ -33,6 +42,13 @@ def getSceneBBoxScale(model):
 	bBoxSize = [abs(rootBBox[0]-rootBBox[3]), abs(rootBBox[1]-rootBBox[4]), abs(rootBBox[2]-rootBBox[5])]
 	bBoxScaleFactor = max(bBoxSize)
 	return bBoxScaleFactor
+
+
+def getSceneXZBBoxScale(model):
+	rootBBox = cmds.exactWorldBoundingBox(model, ignoreInvisible=True)
+	XZbBoxSize = [abs(rootBBox[0]-rootBBox[3]), abs(rootBBox[2]-rootBBox[5])]
+	XZbBoxScaleFactor = max(XZbBoxSize)
+	return XZbBoxScaleFactor
 
 
 def setSpinAnim(obj, firstFrame, lastFrame, offset):
@@ -79,9 +95,13 @@ def arnoldTurntableGenerator():
 
 		cmds.rename(name, skydomeName)
 
-		cmds.shadingNode( 'file', asTexture=True, n='skydome_file' )
-		cmds.connectAttr( 'skydome_file.outColor', skydomeName +'Shape.color' )
+		cmds.shadingNode('file', asTexture=True, n='skydome_file')
+		cmds.shadingNode('aiColorCorrect', asUtility=True, n='skydome_colorCorrect')
+		cmds.connectAttr('skydome_file.outColor', 'skydome_colorCorrect.input')
+		cmds.connectAttr('skydome_colorCorrect.outColor', skydomeName +'Shape.color' )
+
 		cmds.setAttr('skydome_file.fileTextureName', iblFilePath, type='string')
+		cmds.setAttr('skydome_colorCorrect.saturation', 0)
 		cmds.setAttr(skydomeName+'Shape'+'.aiSamples', 2)
 
 		cmds.setAttr(skydomeName+'.rotateY', 180)
@@ -91,7 +111,8 @@ def arnoldTurntableGenerator():
 		'''
 		Create Cyclo
 		'''
-		cmds.AbcImport(cycloGeoFilePath)
+		cmds.group( em=True, name='cycloRoot_GRP' )
+		cmds.AbcImport(cycloGeoFilePath, rpr='cycloRoot_GRP')
 
 		rootsYMin = cmds.exactWorldBoundingBox(roots, ignoreInvisible=True)[1]
 
@@ -99,23 +120,55 @@ def arnoldTurntableGenerator():
 		cmds.xform("cyclo_GRP", scale=(scaleFactor, scaleFactor, scaleFactor))
 
 
-		for mesh in cmds.listRelatives("cyclo_GRP", ad=True, type='mesh', fullPath=True):
+		for mesh in cmds.listRelatives("cycloRoot_GRP", ad=True, type='mesh', fullPath=True):
 			meshes.append(mesh)
+
+
+		'''
+		Create Dad model scale reference
+		'''
+		cmds.group( em=True, name='dadRoot_GRP' )
+		cmds.AbcImport(dadGeoFilePath, rpr='dadRoot_GRP')
+		for mesh in cmds.listRelatives("dadRoot_GRP", ad=True, type='mesh', fullPath=True):
+			meshes.append(mesh)
+
+		dadXOffset = ((getSceneXZBBoxScale(roots)/2)+abs(cmds.exactWorldBoundingBox("dadRoot_GRP")[0]-cmds.exactWorldBoundingBox("dadRoot_GRP")[3])/2)*1.2
+		cmds.xform("dadRoot_GRP", absolute=True, t=[dadXOffset, rootsYMin, 0])
+
+		cmds.duplicate('dadRoot_GRP', n='temp_dadRoot_GRP')
+		dadXOffset2 = (-(getSceneXZBBoxScale(roots)/2)-abs(cmds.exactWorldBoundingBox("dadRoot_GRP")[0]-cmds.exactWorldBoundingBox("dadRoot_GRP")[3])/2)*1.2
+		cmds.xform("temp_dadRoot_GRP", absolute=True, t=[dadXOffset2, rootsYMin, 0])
+
+		cmds.setAttr("dadRoot_GRP"+".ty", lock=True)
+		cmds.setAttr("dadRoot_GRP"+".tz", lock=True)
+		cmds.setAttr("dadRoot_GRP"+".rx", lock=True)
+		cmds.setAttr("dadRoot_GRP"+".ry", lock=True)
+		cmds.setAttr("dadRoot_GRP"+".rz", lock=True)
+		cmds.setAttr("dadRoot_GRP"+".sx", lock=True)
+		cmds.setAttr("dadRoot_GRP"+".sy", lock=True)
+		cmds.setAttr("dadRoot_GRP"+".sz", lock=True)
 
 
 
 		'''
 		Create Balls and macBeth
 		'''
-		cmds.AbcImport(camPropsFilePath)
+		cmds.group( em=True, name='propsCamRoot_GRP' )
+		cmds.AbcImport(camPropsFilePath, rpr='propsCamRoot_GRP')
 
-		for mesh in cmds.listRelatives("propsCam_GRP", ad=True, type='mesh', fullPath=True):
+		for mesh in cmds.listRelatives("propsCamRoot_GRP", ad=True, type='mesh', fullPath=True):
 			meshes.append(mesh)
 			cmds.setAttr(mesh+'.castsShadows', 0)
 			cmds.setAttr(mesh+'.aiVisibleInSpecularReflection', 0)
+			cmds.setAttr(mesh+'.aiVisibleInDiffuseReflection', 0)
+			cmds.setAttr(mesh+'.aiVisibleInDiffuseTransmission', 0)
+			cmds.setAttr(mesh+'.aiVisibleInSpecularTransmission', 0)
+			cmds.setAttr(mesh+'.aiVisibleInVolume', 0)
+			cmds.setAttr(mesh+'.aiSelfShadows', 0)
 
+		cmds.xform('propsCamRoot_GRP', relative=True, t=[-2.8, 1.3, -19.5])
+			
  
-
 		'''
 		Subdivide Mesh
 		'''
@@ -133,7 +186,7 @@ def arnoldTurntableGenerator():
 		'''
 		Create Assets Shaders
 		'''
-		materialList = ["default_MAT", "glass_MAT", "cyclo_MAT", "cameraMatteBalls_MAT", "cameraChromeBalls_MAT", "macBeth_MAT"]
+		materialList = ["default_MAT", "glass_MAT", "cyclo_MAT", "cameraMatteBalls_MAT", "cameraChromeBalls_MAT", "macBeth_MAT", "metal_MAT", "paint_MAT", "rubber_MAT"]
 
 		#Create aiUserDataColor Node
 		userDataColorNode = "userDataColor_base"
@@ -163,33 +216,55 @@ def arnoldTurntableGenerator():
 		cmds.setAttr('colorJitter_default.objGainMax', 0.03)
 		cmds.ToggleAttributeEditor()
 
-		cmds.setAttr(materialList[0]+'.specularRoughness', 0.5)
-		cmds.setAttr(materialList[0]+'.coatRoughness', 0.2)
-		cmds.setAttr(materialList[0]+'.coat', 0.15)
+		cmds.setAttr('default_MAT'+'.specularRoughness', 0.5)
+		cmds.setAttr('default_MAT'+'.coatRoughness', 0.2)
+		cmds.setAttr('default_MAT'+'.coat', 0.15)
 
 		#glass
-		cmds.setAttr(materialList[1]+'.specularIOR', 1.52)
-		cmds.setAttr(materialList[1]+'.specularRoughness', 0)
-		cmds.setAttr(materialList[1]+'.transmission', 1)
-		cmds.setAttr(materialList[1]+'.thinWalled', 1)
+		cmds.setAttr('glass_MAT'+'.specularIOR', 1.52)
+		cmds.setAttr('glass_MAT'+'.specularRoughness', 0)
+		cmds.setAttr('glass_MAT'+'.transmission', 1)
+		cmds.setAttr('glass_MAT'+'.thinWalled', 1)
 
 		#cyclo
-		cmds.setAttr(materialList[2]+'.baseColor', 0.4, 0.4, 0.4, type="double3" )
-		cmds.setAttr(materialList[2]+'.specular', 0)
+		cmds.setAttr('cyclo_MAT'+'.baseColor', 0.4, 0.4, 0.4, type="double3" )
+		cmds.setAttr('cyclo_MAT'+'.specular', 0)
 
 		#cameraMatteBalls
-		cmds.setAttr(materialList[3]+'.specular', 0)
-		cmds.connectAttr(userDataColorNode+'.outColor', materialList[3]+'.baseColor')
+		cmds.setAttr('cameraMatteBalls_MAT'+'.specularRoughness', 0.6)
+		cmds.connectAttr(userDataColorNode+'.outColor', 'cameraMatteBalls_MAT'+'.baseColor')
 
 		#cameraChromeBalls
-		cmds.setAttr(materialList[4]+'.metalness', 1)
-		cmds.setAttr(materialList[4]+'.specularRoughness', 0)
+		cmds.setAttr('cameraChromeBalls_MAT'+'.baseColor', 0.65, 0.65, 0.65, type="double3" )
+		cmds.setAttr('cameraChromeBalls_MAT'+'.metalness', 1)
+		cmds.setAttr('cameraChromeBalls_MAT'+'.specularRoughness', 0)
 
 		#macBeth
-		cmds.setAttr(materialList[5]+'.specular', 0)
+		cmds.setAttr('macBeth_MAT'+'.base', 1)
+		cmds.setAttr('macBeth_MAT'+'.specular', 0)
 		cmds.shadingNode( 'file', asTexture=True, n='macBeth_file' )
 		cmds.connectAttr( 'macBeth_file.outColor', materialList[5]+'.baseColor' )
 		cmds.setAttr('macBeth_file.fileTextureName', macBethFilePath, type='string')
+
+		#metal
+		cmds.setAttr('metal_MAT'+'.metalness', 1)
+		cmds.setAttr('metal_MAT'+'.specularRoughness', 0.35)
+		cmds.shadingNode('aiColorCorrect', asUtility=True, n='metalColor_colorCorrect')
+		cmds.connectAttr('colorJitter_default.outColor', 'metalColor_colorCorrect.input')
+		cmds.connectAttr('metalColor_colorCorrect.outColor', 'metal_MAT.baseColor')
+		cmds.setAttr('metalColor_colorCorrect.exposure', 0.5)
+
+		#paint
+		cmds.connectAttr('colorJitter_default.outColor', 'paint_MAT.baseColor')
+		cmds.setAttr('paint_MAT'+'.specularRoughness', 0.4)
+		cmds.setAttr('paint_MAT'+'.coat', 0.4)
+		cmds.setAttr('paint_MAT'+'.coatRoughness', 0.05)
+
+		#rubber
+		cmds.connectAttr('colorJitter_default.outColor', 'rubber_MAT.baseColor')
+		cmds.setAttr('rubber_MAT'+'.diffuseRoughness', 1)
+		cmds.setAttr('rubber_MAT'+'.specularRoughness', 0.6)
+		cmds.setAttr('rubber_MAT'+'.specular', 0.5)
 
 
 		'''
@@ -209,23 +284,57 @@ def arnoldTurntableGenerator():
 			cmds.sets(m, e=True, forceElement=materialList[0]+"SG")
 
 
-
 			#material assignment
-			if 'glass' in m:
-				cmds.sets(m, e=True, forceElement=materialList[1]+"SG")
-				cmds.setAttr(m+'.aiOpaque', 0)
 
-			if 'cyclo' in m:
-				cmds.sets(m, e=True, forceElement=materialList[2]+"SG")
+			objectShortName = m.split('|')[-1]
+			shapeSplitName = objectShortName.split('_')
 
-			if 'greyBall' in m or 'whiteBall' in m:
-				cmds.sets(m, e=True, forceElement=materialList[3]+"SG")
+			if len(shapeSplitName)!=4:
+				pass
 
-			if 'chromeBall' in m:
-				cmds.sets(m, e=True, forceElement=materialList[4]+"SG")
+			else:
 
-			if 'macBeth' in m:
-				cmds.sets(m, e=True, forceElement=materialList[5]+"SG")
+				#Assets materials
+
+				if 'glass' in shapeSplitName[0]:
+					cmds.sets(m, e=True, forceElement="glass_MAT"+"SG")
+					cmds.setAttr(m+'.aiOpaque', 0)
+
+				if 'metal' in shapeSplitName[0]:
+					cmds.sets(m, e=True, forceElement="metal_MAT"+"SG")
+
+				if 'paint' in shapeSplitName[0]:
+					cmds.sets(m, e=True, forceElement="paint_MAT"+"SG")
+
+				if 'rubber' in shapeSplitName[0]:
+					cmds.sets(m, e=True, forceElement="rubber_MAT"+"SG")
+
+
+				#Mesh light
+				if 'light' in shapeSplitName[0]:
+					meshTransform = cmds.listRelatives(m, p=True, type='transform')[0]
+					cmds.select(meshTransform, r=True)
+					mtoa.utils.createMeshLight()
+					meshLightName = 'light_' + meshTransform
+					cmds.setAttr(meshLightName+'.lightVisible', 1)
+					cmds.setAttr(meshLightName+'.aiNormalize', 0)
+					cmds.select(cl=True)
+
+
+
+				#Turntable elements materials
+
+				if 'cyclo' in shapeSplitName[2]:
+					cmds.sets(m, e=True, forceElement="cyclo_MAT"+"SG")
+
+				if 'greyBall' in shapeSplitName[2] or 'whiteBall' in shapeSplitName[3]:
+					cmds.sets(m, e=True, forceElement="cameraMatteBalls_MAT"+"SG")
+
+				if 'chromeBall' in shapeSplitName[2]:
+					cmds.sets(m, e=True, forceElement="cameraChromeBalls_MAT"+"SG")
+
+				if 'macBeth' in shapeSplitName[2]:
+					cmds.sets(m, e=True, forceElement="macBeth_MAT"+"SG")
 
 
 
@@ -240,8 +349,6 @@ def arnoldTurntableGenerator():
 
 
 
-
-
 		'''
 		Create Camera
 		'''
@@ -252,9 +359,15 @@ def arnoldTurntableGenerator():
 		cmds.setAttr(cameraName+'.locatorScale', scaleFactor)
 		cmds.setAttr(cameraName+'.displayGateMaskColor', 0,0,0, type='double3')
 		cmds.setAttr(cameraName+'.displayGateMaskOpacity', 1)
-		cmds.setAttr(cameraName+'.rotateX', -5)
-
 		cmds.setAttr(cameraName+'.displayResolution', 1)
+
+
+		cmds.parentConstraint(cameraName, 'propsCamRoot_GRP', maintainOffset=True, n='propsCam_parentConstraint')
+
+		'''
+		Place Camera
+		'''
+		cmds.setAttr(cameraName+'.rotateX', -5)
 
 		#Look Through
 		mel.eval('setNamedPanelLayout("Single Perspective View")')
@@ -263,12 +376,22 @@ def arnoldTurntableGenerator():
 
 		#Fit View
 		cmds.select(roots, r=True)
-		cmds.viewFit(f=0.8)
+		cmds.select("dadRoot_GRP", add=True)
+		cmds.select("temp_dadRoot_GRP", add=True)
+		cmds.viewFit(f=0.9)
 		cmds.select(cl=True)
 
 		cmds.setAttr(cameraName+'.farClipPlane', cmds.getAttr(cameraName+'.centerOfInterest')*10)
 
+		cmds.setAttr(cameraName+".tx", lock=True)
+		cmds.setAttr(cameraName+".ry", lock=True)
+		cmds.setAttr(cameraName+".rz", lock=True)
+		cmds.setAttr(cameraName+".sx", lock=True)
+		cmds.setAttr(cameraName+".sy", lock=True)
+		cmds.setAttr(cameraName+".sz", lock=True)
 
+
+		cmds.delete("temp_dadRoot_GRP")
 		
 		'''
 		Create Turntable Locator
@@ -316,6 +439,6 @@ def arnoldTurntableGenerator():
 		#MTOA
 		cmds.setAttr('defaultArnoldRenderOptions.AASamples', 5)
 		cmds.setAttr('defaultArnoldRenderOptions.GIDiffuseSamples', 3)
-		cmds.setAttr('defaultArnoldRenderOptions.GISpecularSamples', 2)
+		cmds.setAttr('defaultArnoldRenderOptions.GISpecularSamples', 3)
 
 
