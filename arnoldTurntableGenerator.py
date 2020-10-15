@@ -2,6 +2,9 @@ import maya.cmds as cmds
 import maya.mel as mel
 import mtoa.utils
 from mtoa.core import createOptions
+import dwpublish_index
+import os
+import json
 
 
 """
@@ -20,7 +23,7 @@ createOptions()
 '''
 Files Path
 '''
-iblFilePath = '/servers/Departments/LIGHTING/maw/GREG/Turntable/sourceImages/ibl_neutral_rig_01.tx'
+iblFilePath = '/servers/RHS/DEV/nleblanc/dad/turntable/sourceimages/ibl_neutral_rig_01.tx'
 cycloGeoFilePath = '/servers/RHS/DEV/nleblanc/dad/turntable/geo/cyclo_v003.abc'
 camPropsFilePath = '/servers/RHS/DEV/nleblanc/dad/turntable/geo/props_cam.abc'
 macBethFilePath = '/servers/RHS/DEV/nleblanc/dad/turntable/sourceimages/macBeth_1k.tx'
@@ -63,7 +66,138 @@ def addArnoldSubdivAttr(mesh, subdLvl, pixelError):
 	cmds.setAttr(mesh+'.aiSubdivPixelError', pixelError)
 
 
+def getLatestGeo():
+	entity_fields = os.environ.get("WORKSPACE_ENTITIES")
+	entity_fields = json.loads(entity_fields)
+	entity_data = entity_fields.get("Asset")
+	entity_code = entity_data.keys()[0]
+	entity = entity_data.get(entity_code).get("fields").get("entity_fields")
+
+
+	pkg = dwpublish_index.Package.get_package(entity)
+	slots = pkg.get_slots_by_type()
+	geo = slots.get("Geometry")
+	if not len(geo):
+	    raise Exception ("No Geometry")
+	geo = geo[0]
+	geo.load()
+	publish_data = geo.link
+	filepath = os.path.join(publish_data.get("sg_dw_publish_path"), "GEO.abc")
+
+	cmds.AbcImport(filepath)
+
+
+
+def assignShaderAndColor(mesh, defaultMat):
+
+			#create Arnold Color Attribute
+			cmds.addAttr(mesh, ln="mtoa_constant_color", attributeType="double3")
+			cmds.addAttr(mesh, ln="mtoa_constant_colorX", attributeType="double", p="mtoa_constant_color")
+			cmds.addAttr(mesh, ln="mtoa_constant_colorY", attributeType="double", p="mtoa_constant_color")
+			cmds.addAttr(mesh, ln="mtoa_constant_colorZ", attributeType="double", p="mtoa_constant_color")
+			cmds.setAttr(mesh +'.mtoa_constant_color', 0.18,0.18,0.18,  type="double3")
+
+			#create Arnold Float Attribute for Transmission
+			cmds.addAttr(mesh, ln="mtoa_constant_trans", attributeType="double", dv=0)
+
+			#create Arnold Float Attribute for IOR
+			cmds.addAttr(mesh, ln="mtoa_constant_IOR", attributeType="double", dv=1.52)
+
+
+			#assign default_mat to all meshes
+			cmds.sets(mesh, e=True, forceElement=defaultMat+"SG")
+
+
+			#material assignment
+			objectShortName = mesh.split('|')[-1]
+			shapeSplitName = objectShortName.split('_')
+
+			if len(shapeSplitName)!=4:
+				pass
+
+			else:
+
+				#Assets materials
+
+				if 'glass' in shapeSplitName[0]:
+					cmds.sets(mesh, e=True, forceElement="glass_MAT"+"SG")
+					cmds.setAttr(mesh+'.aiOpaque', 0)
+
+				if 'metal' in shapeSplitName[0]:
+					cmds.sets(mesh, e=True, forceElement="metal_MAT"+"SG")
+
+				if 'paint' in shapeSplitName[0]:
+					cmds.sets(mesh, e=True, forceElement="paint_MAT"+"SG")
+
+				if 'rubber' in shapeSplitName[0]:
+					cmds.sets(mesh, e=True, forceElement="rubber_MAT"+"SG")
+
+				if 'skin' in shapeSplitName[0]:
+					cmds.sets(mesh, e=True, forceElement="skin_MAT"+"SG")
+
+				if 'cloth' in shapeSplitName[0]:
+					cmds.sets(mesh, e=True, forceElement="cloth_MAT"+"SG")
+
+				if 'hair' in shapeSplitName[0]:
+					cmds.sets(mesh, e=True, forceElement="hair_MAT"+"SG")
+
+				if 'sclera' in objectShortName.lower():
+					cmds.sets(mesh, e=True, forceElement="sclera_MAT"+"SG")
+
+
+
+				#Mesh light
+				if 'light' in shapeSplitName[0]:
+					meshTransform = cmds.listRelatives(mesh, p=True, type='transform')[0]
+					cmds.select(meshTransform, r=True)
+					mtoa.utils.createMeshLight()
+					meshLightName = 'light_' + meshTransform
+					cmds.setAttr(meshLightName+'.lightVisible', 1)
+					cmds.setAttr(meshLightName+'.aiNormalize', 0)
+					cmds.select(cl=True)
+
+
+
+				#Turntable elements materials
+
+				if 'cyclo' in shapeSplitName[2]:
+					cmds.sets(mesh, e=True, forceElement="cyclo_MAT"+"SG")
+
+				if 'greyBall' in shapeSplitName[2] or 'whiteBall' in shapeSplitName[3]:
+					cmds.sets(mesh, e=True, forceElement="cameraMatteBalls_MAT"+"SG")
+
+				if 'chromeBall' in shapeSplitName[2]:
+					cmds.sets(mesh, e=True, forceElement="cameraChromeBalls_MAT"+"SG")
+
+				if 'macBeth' in shapeSplitName[2]:
+					cmds.sets(mesh, e=True, forceElement="macBeth_MAT"+"SG")
+
+
+
+
+			#color set attributes
+			if 'Black' in shapeSplitName[0]:
+				cmds.setAttr(mesh +'.mtoa_constant_color', 0.03, 0.03, 0.03,  type="double3")
+
+			if 'White' in shapeSplitName[0]:
+				cmds.setAttr(mesh +'.mtoa_constant_color', 1.0, 1.0, 1.0,  type="double3")
+
+			#Transmission set Attributes
+			if 'Clear' in shapeSplitName[0]:
+				cmds.setAttr(mesh +'.mtoa_constant_trans', 1)
+
+			#IOR set attributes
+			if 'cornea' in objectShortName.lower():
+				cmds.setAttr(mesh +'.mtoa_constant_IOR', 1.336)
+
+
+
+
 def arnoldTurntableGenerator():
+
+	#getLatestGeo()
+
+
 	meshes = cmds.ls(type='mesh', l=True)
 
 	if len(meshes)<1:
@@ -83,6 +217,22 @@ def arnoldTurntableGenerator():
 
 		cmds.spaceLocator(n='meshesCenter_LOC')
 		cmds.xform('meshesCenter_LOC', t=modelCenter)
+
+
+		'''
+		Create Cyclo
+		'''
+		cmds.group( em=True, name='cycloRoot_GRP' )
+		cmds.AbcImport(cycloGeoFilePath, rpr='cycloRoot_GRP')
+
+		rootsYMin = cmds.exactWorldBoundingBox(roots, ignoreInvisible=True)[1]
+
+		cmds.xform("cyclo_GRP", translation=(0, rootsYMin, 0))
+		cmds.xform("cyclo_GRP", scale=(scaleFactor, scaleFactor, scaleFactor))
+
+
+		for mesh in cmds.listRelatives("cycloRoot_GRP", ad=True, type='mesh', fullPath=True):
+			meshes.append(mesh)
 
 
 		'''
@@ -107,21 +257,7 @@ def arnoldTurntableGenerator():
 		cmds.setAttr(skydomeName+'.rotateY', 180)
 		cmds.xform(skydomeName, scale=(scaleFactor, scaleFactor, scaleFactor))
 
-
-		'''
-		Create Cyclo
-		'''
-		cmds.group( em=True, name='cycloRoot_GRP' )
-		cmds.AbcImport(cycloGeoFilePath, rpr='cycloRoot_GRP')
-
-		rootsYMin = cmds.exactWorldBoundingBox(roots, ignoreInvisible=True)[1]
-
-		cmds.xform("cyclo_GRP", translation=(0, rootsYMin, 0))
-		cmds.xform("cyclo_GRP", scale=(scaleFactor, scaleFactor, scaleFactor))
-
-
-		for mesh in cmds.listRelatives("cycloRoot_GRP", ad=True, type='mesh', fullPath=True):
-			meshes.append(mesh)
+		skydomeName = 'skyDome_LGT'
 
 
 		'''
@@ -131,6 +267,9 @@ def arnoldTurntableGenerator():
 		cmds.AbcImport(dadGeoFilePath, rpr='dadRoot_GRP')
 		for mesh in cmds.listRelatives("dadRoot_GRP", ad=True, type='mesh', fullPath=True):
 			meshes.append(mesh)
+			cmds.setAttr(mesh+'.aiVisibleInSpecularReflection', 0)
+			cmds.setAttr(mesh+'.aiVisibleInDiffuseReflection', 0)
+
 
 		dadXOffset = ((getSceneXZBBoxScale(roots)/2)+abs(cmds.exactWorldBoundingBox("dadRoot_GRP")[0]-cmds.exactWorldBoundingBox("dadRoot_GRP")[3])/2)*1.2
 		cmds.xform("dadRoot_GRP", absolute=True, t=[dadXOffset, rootsYMin, 0])
@@ -175,24 +314,58 @@ def arnoldTurntableGenerator():
 		subdivSuffixList = ["_GES", "_GED", "_GEV"]
 
 		for suffix in subdivSuffixList:
-			subDivMeshes = cmds.ls('*' + suffix + '*', typ='mesh')
-			if subDivMeshes >1:
+			subDivMeshes = cmds.ls('*' + suffix + '*', typ='mesh', l=True)
+			if len(subDivMeshes) >1:
 				for m in subDivMeshes:
 					addArnoldSubdivAttr(m, 3, 0.5)
 			else:
 				pass
 
+		'''
+		Non renderable mesh
+		'''
+		nonRenderableMeshes = cmds.ls('*_PLY*', typ='mesh', l=True)
+		if len(nonRenderableMeshes)>1:
+			for m in nonRenderableMeshes:
+				if '_PLY' in m:
+					cmds.setAttr(m+'.primaryVisibility', 0)
+					cmds.setAttr(m+'.castsShadows', 0)
+					cmds.setAttr(m+'.aiVisibleInDiffuseReflection', 0)
+					cmds.setAttr(m+'.aiVisibleInSpecularReflection', 0)
+					cmds.setAttr(m+'.aiVisibleInDiffuseTransmission', 0)
+					cmds.setAttr(m+'.aiVisibleInSpecularTransmission', 0)
+					cmds.setAttr(m+'.aiVisibleInVolume', 0)
+					cmds.setAttr(m+'.aiSelfShadows', 0)
+
+		else:
+			pass
+
 
 		'''
 		Create Assets Shaders
 		'''
-		materialList = ["default_MAT", "glass_MAT", "cyclo_MAT", "cameraMatteBalls_MAT", "cameraChromeBalls_MAT", "macBeth_MAT", "metal_MAT", "paint_MAT", "rubber_MAT"]
+		materialList = ["default_MAT", "glass_MAT", "cyclo_MAT", "cameraMatteBalls_MAT", "cameraChromeBalls_MAT", "macBeth_MAT", "metal_MAT", "paint_MAT", "rubber_MAT", "skin_MAT", "cloth_MAT", "hair_MAT", "sclera_MAT"]
 
 		#Create aiUserDataColor Node
 		userDataColorNode = "userDataColor_base"
 		cmds.shadingNode('aiUserDataColor', asUtility=True, n=userDataColorNode)
 		cmds.setAttr(userDataColorNode+'.attribute', "color", type="string")
 		cmds.setAttr(userDataColorNode+'.default', 0.18,0.18,0.18, type="double3")
+
+		#Create aiUserDataFloat Node for transmissiom
+		userDataFloatTrans = "userDataFloat_trans"
+		cmds.shadingNode('aiUserDataFloat', asUtility=True, n=userDataFloatTrans)
+		cmds.setAttr(userDataFloatTrans+'.attribute', "trans", type="string")
+		cmds.setAttr(userDataFloatTrans+'.default', 0)
+
+		#Create aiUserDataFloat Node for IOR
+		userDataFloatIOR = "userDataFloat_IOR"
+		cmds.shadingNode('aiUserDataFloat', asUtility=True, n=userDataFloatIOR)
+		cmds.setAttr(userDataFloatIOR+'.attribute', "IOR", type="string")
+		cmds.setAttr(userDataFloatIOR+'.default', 1.52)
+
+
+
 
 		for m in materialList:
 
@@ -221,10 +394,13 @@ def arnoldTurntableGenerator():
 		cmds.setAttr('default_MAT'+'.coat', 0.15)
 
 		#glass
+		cmds.connectAttr('colorJitter_default.outColor', 'glass_MAT.baseColor')
 		cmds.setAttr('glass_MAT'+'.specularIOR', 1.52)
 		cmds.setAttr('glass_MAT'+'.specularRoughness', 0)
 		cmds.setAttr('glass_MAT'+'.transmission', 1)
 		cmds.setAttr('glass_MAT'+'.thinWalled', 1)
+		cmds.connectAttr(userDataFloatTrans+'.outValue', 'glass_MAT'+'.transmission')
+		cmds.connectAttr(userDataFloatIOR+'.outValue', 'glass_MAT'+'.specularIOR')
 
 		#cyclo
 		cmds.setAttr('cyclo_MAT'+'.baseColor', 0.4, 0.4, 0.4, type="double3" )
@@ -266,87 +442,60 @@ def arnoldTurntableGenerator():
 		cmds.setAttr('rubber_MAT'+'.specularRoughness', 0.6)
 		cmds.setAttr('rubber_MAT'+'.specular', 0.5)
 
+		#skin
+		cmds.setAttr('skin_MAT'+'.base', 0)
+		cmds.setAttr('skin_MAT'+'.specularRoughness', 0.4)
+		cmds.setAttr('skin_MAT'+'.specularIOR', 1.330)
+		cmds.setAttr('skin_MAT'+'.subsurface', 1)
+		cmds.setAttr('skin_MAT'+'.subsurfaceScale', 0.1)
+		cmds.setAttr('skin_MAT'+'.subsurfaceColor', 0.4, 0.4, 0.4, type="double3")
+		cmds.setAttr('skin_MAT'+'.subsurfaceRadius', 0.25, 0.25, 0.25, type="double3")
+		cmds.shadingNode('aiColorCorrect', asUtility=True, n='skinColor_colorCorrect')
+		cmds.connectAttr('colorJitter_default.outColor', 'skinColor_colorCorrect.input')
+		cmds.connectAttr('skinColor_colorCorrect.outColor', 'skin_MAT.subsurfaceColor')
+		cmds.setAttr("skinColor_colorCorrect.gamma", 1.6)
+		cmds.setAttr("skinColor_colorCorrect.contrast", 1.5)
+
+
+		#cloth
+		cmds.connectAttr('colorJitter_default.outColor', 'cloth_MAT.baseColor')
+		cmds.setAttr('cloth_MAT'+'.specular', 0.5)
+		cmds.setAttr('cloth_MAT'+'.specularRoughness', 0.6)
+		cmds.setAttr('cloth_MAT'+'.sheen', 0.5)
+
+		#hair
+		cmds.setAttr('hair_MAT'+'.base', 0.2)
+		cmds.setAttr('hair_MAT'+'.baseColor', 0.18, 0.18, 0.18, type="double3" )
+		cmds.setAttr('hair_MAT'+'.specular', 0.1)
+		cmds.setAttr('hair_MAT'+'.specularRoughness', 0.45)
+		cmds.setAttr('hair_MAT'+'.sheen', 0.5)
+		cmds.setAttr('hair_MAT'+'.sheenRoughness', 0.2)
+
+		#sclera
+		#gradient Color
+		cmds.shadingNode('ramp', asTexture=True, n='rampColor_sclera')
+		cmds.shadingNode('place2dTexture', asUtility=True, n='place2dTextureColor_sclera')
+		cmds.connectAttr('place2dTextureColor_sclera.outUV', 'rampColor_sclera.uvCoord')
+		cmds.connectAttr('place2dTextureColor_sclera.outUvFilterSize', 'rampColor_sclera.uvFilterSize')
+		cmds.setAttr("rampColor_sclera.colorEntryList[0].position", 0.0)
+		cmds.setAttr("rampColor_sclera.colorEntryList[0].color", 0, 0, 0, type='double3')
+		cmds.setAttr("rampColor_sclera.colorEntryList[1].position", 0.2)
+		cmds.setAttr("rampColor_sclera.colorEntryList[1].color", 0.18, 0.18, 0.18, type='double3')
+		cmds.setAttr("rampColor_sclera.colorEntryList[2].position", 0.5)
+		cmds.setAttr("rampColor_sclera.colorEntryList[2].color", 0.8, 0.8, 0.8, type='double3')
+		cmds.setAttr("rampColor_sclera.interpolation", 0)
+		cmds.connectAttr('rampColor_sclera.outColor', 'sclera_MAT.baseColor')
+
+		cmds.setAttr('sclera_MAT'+'.specular', 0)
+
+
+
 
 		'''
 		Assign Shaders and colors
 		'''
 		for m in meshes:
-			#create Arnold Color Attribute
-			cmds.addAttr(m, ln="mtoa_constant_color", attributeType="double3")
-			cmds.addAttr(m, ln="mtoa_constant_colorX", attributeType="double", p="mtoa_constant_color")
-			cmds.addAttr(m, ln="mtoa_constant_colorY", attributeType="double", p="mtoa_constant_color")
-			cmds.addAttr(m, ln="mtoa_constant_colorZ", attributeType="double", p="mtoa_constant_color")
-			cmds.setAttr(m+'.mtoa_constant_color', 0.18,0.18,0.18,  type="double3")
-
-
-
-			#assign default_mat to all meshes
-			cmds.sets(m, e=True, forceElement=materialList[0]+"SG")
-
-
-			#material assignment
-
-			objectShortName = m.split('|')[-1]
-			shapeSplitName = objectShortName.split('_')
-
-			if len(shapeSplitName)!=4:
-				pass
-
-			else:
-
-				#Assets materials
-
-				if 'glass' in shapeSplitName[0]:
-					cmds.sets(m, e=True, forceElement="glass_MAT"+"SG")
-					cmds.setAttr(m+'.aiOpaque', 0)
-
-				if 'metal' in shapeSplitName[0]:
-					cmds.sets(m, e=True, forceElement="metal_MAT"+"SG")
-
-				if 'paint' in shapeSplitName[0]:
-					cmds.sets(m, e=True, forceElement="paint_MAT"+"SG")
-
-				if 'rubber' in shapeSplitName[0]:
-					cmds.sets(m, e=True, forceElement="rubber_MAT"+"SG")
-
-
-				#Mesh light
-				if 'light' in shapeSplitName[0]:
-					meshTransform = cmds.listRelatives(m, p=True, type='transform')[0]
-					cmds.select(meshTransform, r=True)
-					mtoa.utils.createMeshLight()
-					meshLightName = 'light_' + meshTransform
-					cmds.setAttr(meshLightName+'.lightVisible', 1)
-					cmds.setAttr(meshLightName+'.aiNormalize', 0)
-					cmds.select(cl=True)
-
-
-
-				#Turntable elements materials
-
-				if 'cyclo' in shapeSplitName[2]:
-					cmds.sets(m, e=True, forceElement="cyclo_MAT"+"SG")
-
-				if 'greyBall' in shapeSplitName[2] or 'whiteBall' in shapeSplitName[3]:
-					cmds.sets(m, e=True, forceElement="cameraMatteBalls_MAT"+"SG")
-
-				if 'chromeBall' in shapeSplitName[2]:
-					cmds.sets(m, e=True, forceElement="cameraChromeBalls_MAT"+"SG")
-
-				if 'macBeth' in shapeSplitName[2]:
-					cmds.sets(m, e=True, forceElement="macBeth_MAT"+"SG")
-
-
-
-
-			#color set attributes
-			if 'Black' in m:
-				cmds.setAttr(m+'.mtoa_constant_color', 0.03, 0.03, 0.03,  type="double3")
-
-			if 'White' in m:
-				cmds.setAttr(m+'.mtoa_constant_color', 1.0, 1.0, 1.0,  type="double3")
-
-
+			assignShaderAndColor(m, materialList[0])
 
 
 		'''
@@ -438,7 +587,8 @@ def arnoldTurntableGenerator():
 
 		#MTOA
 		cmds.setAttr('defaultArnoldRenderOptions.AASamples', 5)
-		cmds.setAttr('defaultArnoldRenderOptions.GIDiffuseSamples', 3)
-		cmds.setAttr('defaultArnoldRenderOptions.GISpecularSamples', 3)
+		cmds.setAttr('defaultArnoldRenderOptions.GIDiffuseSamples', 2)
+		cmds.setAttr('defaultArnoldRenderOptions.GISpecularSamples', 2)
+		cmds.setAttr('defaultArnoldRenderOptions.GISssSamples', 6)
 
 
