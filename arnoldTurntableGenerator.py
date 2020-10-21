@@ -103,6 +103,9 @@ def assignShaderAndColor(mesh, defaultMat):
 			#create Arnold Float Attribute for IOR
 			cmds.addAttr(mesh, ln="mtoa_constant_IOR", attributeType="double", dv=1.52)
 
+			#create Arnold Float Attribute for Color Jitter
+			cmds.addAttr(mesh, ln="mtoa_constant_jitter", attributeType="double", dv=0.03)
+
 
 			#assign default_mat to all meshes
 			cmds.sets(mesh, e=True, forceElement=defaultMat+"SG")
@@ -365,6 +368,14 @@ def arnoldTurntableGenerator():
 		cmds.setAttr(userDataFloatIOR+'.default', 1.52)
 
 
+		#Create aiUserDataFloat Node for color jitter
+		userDataFloatJitter = "userDataFloat_jitter"
+		cmds.shadingNode('aiUserDataFloat', asUtility=True, n=userDataFloatJitter)
+		cmds.setAttr(userDataFloatJitter+'.attribute', "jitter", type="string")
+		cmds.setAttr(userDataFloatJitter+'.default', 0.03)
+
+
+
 
 
 		for m in materialList:
@@ -385,13 +396,16 @@ def arnoldTurntableGenerator():
 		cmds.select('colorJitter_default', r=True)
 		mel.eval("ShowAttributeEditorOrChannelBox;")
 		cmds.setAttr('colorJitter_default.typeSwitch', 2)
-		cmds.setAttr('colorJitter_default.objGainMin', -0.03)
-		cmds.setAttr('colorJitter_default.objGainMax', 0.03)
+		#cmds.setAttr('colorJitter_default.objGainMin', -0.03)
+		#cmds.setAttr('colorJitter_default.objGainMax', 0.03)
 		cmds.ToggleAttributeEditor()
 
 		cmds.setAttr('default_MAT'+'.specularRoughness', 0.5)
 		cmds.setAttr('default_MAT'+'.coatRoughness', 0.2)
 		cmds.setAttr('default_MAT'+'.coat', 0.15)
+
+		cmds.expression(s="colorJitter_default.objGainMin = -colorJitter_default.objGainMax", object='colorJitter_default', ae=True)
+		cmds.connectAttr(userDataFloatJitter+'.outValue', 'colorJitter_default.objGainMax')
 
 		#glass
 		cmds.connectAttr('colorJitter_default.outColor', 'glass_MAT.baseColor')
