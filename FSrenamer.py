@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #title           :FSrenamer.py
 #description     :Renamer tool for modelling department using Framestore naming convention.
-#date            :20200819
+#date            :20201114
 #==============================================================================
 
 
@@ -13,7 +13,7 @@ import time
 
 
 __title__ = "FS Renamer"
-__version__ = '1.0'
+__version__ = '1.04'
 __author__ = "Nicolas Leblanc"
 __company__ = "Framestore"
 __maintainer__ = "Nicolas Leblanc"
@@ -84,12 +84,17 @@ def renameSelection(*args):
 					paddingFinal = convertToLetter(int(paddingFinal))
 
 				if cmds.checkBox('groupNaming_checkbox', query=True, value=1):
+					if cmds.checkBox('disablePadding_checkbox', query=True, value=1) and len(sel)==1:
 
-					name = nameSpace + nameInput + paddingFinal + '_' + extensionInput
+						name = nameSpace + nameInput + '_' + extensionInput
+
+					else:
+
+						name = nameSpace + nameInput + paddingFinal + '_' + extensionInput
 
 				else:
 
-					name = nameSpace + materialInput + colorInput + '_' + positionInput + '_' + nameInput + paddingFinal + '_' + extensionInput
+						name = nameSpace + materialInput + colorInput + '_' + positionInput + '_' + nameInput + paddingFinal + '_' + extensionInput
 
 				cmds.rename(hierarchyName + '|' + objectName, name)
 
@@ -314,6 +319,7 @@ def enableGroupRename(*args):
 	cmds.optionMenu('colorMenu', edit=True, enable=False)
 	cmds.optionMenu('positionMenu', edit=True, enable=False)
 	cmds.optionMenu('extensionMenu', edit=True, value='GRP')
+	cmds.checkBox('disablePadding_checkbox', edit=True, enable=True)
 	
 
 def disableGroupRename(*args):
@@ -325,6 +331,7 @@ def disableGroupRename(*args):
 	cmds.optionMenu('colorMenu', edit=True, enable=True)
 	cmds.optionMenu('positionMenu', edit=True, enable=True)
 	cmds.optionMenu('extensionMenu', edit=True, value='GEP')
+	cmds.checkBox('disablePadding_checkbox', edit=True, enable=False)
 
 
 def toggleNumberOfDigits(*args):
@@ -349,6 +356,9 @@ def displayNamespacesList():
 	for name in namespaces:
 		cmds.textScrollList('namespaces_list', edit=True, append=name)
 	
+def refreshNamespacesListTrigger(*args):
+	cmds.textScrollList('namespaces_list', edit=True, removeAll=True)
+	displayNamespacesList()
 	
 def FSrenamerUI():
 	'''
@@ -379,7 +389,7 @@ def FSrenamerUI():
 	
 	# Parameters Lists
 
-	materialList = ['stone','paint','metal','wood','plastic','rubber','cloth','glass','ceramic','skin','hair','nail','bone','liquid','polysterene','leather','default','paper','hrsi','felt','lrsi','frsi','rcc','light','plant']
+	materialList = ['stone','paint','metal','wood','plastic','rubber','cloth','glass','ceramic','skin','hair','nail','bone','liquid','polysterene','leather','default','paper','felt','light','plant']
 	materialList.sort()
 	colorList = ['Grey','Black','White','Yellow','Red','Green','Blue','Orange','Purple','Brown','Pink','Colour','Light','Clear','Mixed']
 	colorList.sort()
@@ -473,6 +483,8 @@ def FSrenamerUI():
 	cmds.columnLayout(rowSpacing=5)
 	cmds.button('removeSelectedNamespaces_button', label='Remove Selected Namespaces', width=namespaceButtonSize, command=removeSelectedNamespaces)
 	cmds.button('removeAllNamespaces_button', label='Remove All Namespaces', width=namespaceButtonSize, command=removeAllNamespaces)
+	cmds.separator(height=20, style='none')
+	cmds.button('refreshNamespaces_button', label="Refresh", width=namespaceButtonSize, command=refreshNamespacesListTrigger)
 	cmds.setParent(upLevel=True)
 	cmds.setParent(upLevel=True)
 
@@ -567,6 +579,7 @@ def FSrenamerUI():
 
 	cmds.checkBox('keepNamespace_checkbox', l='Keep Namespaces', v=0)
 	cmds.checkBox('groupNaming_checkbox', l='Group Naming Template', v=0, onc=enableGroupRename, ofc=disableGroupRename)
+	cmds.checkBox('disablePadding_checkbox', l='Disable Padding For Single Group', v=1, en=0)
 
 	cmds.separator( height=10, style='none' )
 	cmds.setParent(upLevel=True)
