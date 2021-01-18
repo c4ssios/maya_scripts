@@ -12,9 +12,9 @@ def locatorAtPivot():
             locName = s.split('|')[-1] +'_LOC'
                    
             cmds.spaceLocator(n=locName)
-            cmds.setAttr(locName+'.translateX', targetPos[0])
-            cmds.setAttr(locName+'.translateY', targetPos[1])
-            cmds.setAttr(locName+'.translateZ', targetPos[2])
-            cmds.setAttr(locName+'.rotateX', targetRot[0])
-            cmds.setAttr(locName+'.rotateY', targetRot[1])
-            cmds.setAttr(locName+'.rotateZ', targetRot[2])
+            cmds.setAttr('|'+locName+'.translateX', targetPos[0])
+            cmds.setAttr('|'+locName+'.translateY', targetPos[1])
+            cmds.setAttr('|'+locName+'.translateZ', targetPos[2])
+            cmds.setAttr('|'+locName+'.rotateX', targetRot[0])
+            cmds.setAttr('|'+locName+'.rotateY', targetRot[1])
+            cmds.setAttr('|'+locName+'.rotateZ', targetRot[2])
