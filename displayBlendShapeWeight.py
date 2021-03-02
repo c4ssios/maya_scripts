@@ -2,7 +2,7 @@ import maya.cmds as cmds
 
 
 __title__ = "BS Weight Annotations"
-__version__ = '0.1'
+__version__ = '0.2'
 __author__ = "Nicolas Leblanc"
 __company__ = "Nicolas Leblanc"
 __maintainer__ = "Nicolas Leblanc"
@@ -24,11 +24,11 @@ def createAnnotationForBS():
 		bbox = cmds.exactWorldBoundingBox(sel[0])
 
 		history = cmds.listHistory(sel[0])
-		blendShapeNode = cmds.ls(history, type="blendShape")[0]
+		blendShapeNode = cmds.ls(history, type="blendShape", l=True)[0]
 
 		blendAttrSize = cmds.getAttr(blendShapeNode+".weight")
 
-		groupName = sel[0]+"_annotations_GRP"
+		groupName = sel[0].split('|')[-1]+"_annotations_GRP"
 
 		if not cmds.objExists(groupName):
 			cmds.group(em=True, name=groupName)
@@ -36,10 +36,7 @@ def createAnnotationForBS():
 		for i in range(len(blendAttrSize[0])):
 
 			attrName = blendShapeNode + ".weight[" + str(i) + "]"
-			#attrValue = cmds.getAttr(attrName)
 			attrValue = float(int(cmds.getAttr(attrName)*1000))/1000
-
-			#print cmds.aliasAttr(attrName, q=True), attrValue
 
 			targetName = str(cmds.aliasAttr(attrName, q=True))
 
@@ -66,8 +63,13 @@ def createAnnotationForBS():
 			'''
 			Create Expression to refresh value
 			'''
+		expressionNodeName = blendShapeNode+"_expression"
 		expressionSTR = 'string $cmd = "displayBlendShapeWeight.updateBSAnnotations();";\npython($cmd);'
-		cmds.expression(n=blendShapeNode+"_expression", s=expressionSTR)
+
+		if cmds.objExists(expressionNodeName):
+			pass
+		else:
+			cmds.expression(n=expressionNodeName, s=expressionSTR)
 			
 
 
@@ -83,7 +85,7 @@ def updateBSAnnotations():
 		annotationList = cmds.ls(type="annotationShape")
 
 		for a in annotationList:
-			shapeName = a.split('_')[0]
+			shapeName = "_".join(a.split('_')[:-1])
 
 			shapeValue = float(int(cmds.getAttr(blendShapeNodeList[0]+'.'+shapeName)*1000))/1000
 			cmds.setAttr(a + '.text', shapeName + ' : ' + str(shapeValue), type="string")
@@ -93,6 +95,4 @@ def updateBSAnnotations():
 			'''
 			cmds.select(a, r=True)
 			cmds.select(cl=True)
-
-
 
