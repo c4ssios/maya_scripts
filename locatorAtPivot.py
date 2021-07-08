@@ -8,6 +8,7 @@ def locatorAtPivot():
         for s in sel:
             targetPos = cmds.xform(s, q=True, rp=True, worldSpace=True)
             targetRot = cmds.xform(s, q=True, ro=True, worldSpace=True)
+            targetScl = cmds.xform(s, q=True, s=True, relative=True)
             
             locName = s.split('|')[-1] +'_LOC'
                    
@@ -15,6 +16,11 @@ def locatorAtPivot():
             cmds.setAttr('|'+locName+'.translateX', targetPos[0])
             cmds.setAttr('|'+locName+'.translateY', targetPos[1])
             cmds.setAttr('|'+locName+'.translateZ', targetPos[2])
+
             cmds.setAttr('|'+locName+'.rotateX', targetRot[0])
             cmds.setAttr('|'+locName+'.rotateY', targetRot[1])
             cmds.setAttr('|'+locName+'.rotateZ', targetRot[2])
+
+            cmds.setAttr('|'+locName+'.scaleX', targetScl[0])
+            cmds.setAttr('|'+locName+'.scaleY', targetScl[1])
+            cmds.setAttr('|'+locName+'.scaleZ', targetScl[2])
