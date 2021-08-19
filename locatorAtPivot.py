@@ -6,6 +6,8 @@ def locatorAtPivot():
         cmds.warning('Select at least on object.')
     else:
         for s in sel:
+
+
             targetPos = cmds.xform(s, q=True, rp=True, worldSpace=True)
             targetRot = cmds.xform(s, q=True, ro=True, worldSpace=True)
             targetScl = cmds.xform(s, q=True, s=True, relative=True)
@@ -24,3 +26,9 @@ def locatorAtPivot():
             cmds.setAttr('|'+locName+'.scaleX', targetScl[0])
             cmds.setAttr('|'+locName+'.scaleY', targetScl[1])
             cmds.setAttr('|'+locName+'.scaleZ', targetScl[2])
+
+
+            sourceParent = cmds.listRelatives(s, p=True, fullPath=True)[0]
+            if sourceParent:
+                cmds.parent(locName, sourceParent)
+
