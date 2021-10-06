@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #title           :FSrenamer.py
 #description     :Renamer tool for modelling department using Framestore naming convention.
-#date            :20201114
+#date            :20211006
 #==============================================================================
 
 
@@ -13,7 +13,7 @@ import time
 
 
 __title__ = "FS Renamer"
-__version__ = '1.04'
+__version__ = '1.10'
 __author__ = "Nicolas Leblanc"
 __company__ = "Framestore"
 __maintainer__ = "Nicolas Leblanc"
@@ -127,7 +127,7 @@ def removeSelectedNamespaces(*args):
 
 	for n in selectedNamespaces:
 		cmds.namespace(mergeNamespaceWithRoot=True, removeNamespace=n)
-		print 'Namespace ' + n + ' removed.'
+		print('Namespace ' + n + ' removed.')
 
 	cmds.textScrollList("namespaces_list",edit=True, removeAll=True)
 	displayNamespacesList()
@@ -153,7 +153,7 @@ def removeAllNamespaces(*args):
 	    for n in namespaces:
 	    	if cmds.namespace(exists=n):
 	    		cmds.namespace(mergeNamespaceWithRoot=True, removeNamespace=n)
-	    		print 'Namespace ' + n + ' removed.'
+	    		print('Namespace ' + n + ' removed.')
 	    	else:
 	    		namespaces = cmds.namespaceInfo(':', listOnlyNamespaces=True, r=True)
 
@@ -204,36 +204,42 @@ def addPrefixSuffix(value, *args):
 		startTime = time.time()
 
 		for s in sel:
-			splitName = s.split('|')
-			objectName = splitName[len(splitName)-1]
-			hierarchyName = s[:-(len(objectName))]
+			objectName = s.rpartition('|')[2]
+			objectNameSimple = ''
+			hierarchyName = s.rpartition('|')[0]
 			nameSpace = ''
-			name = 'name'
-
-			if cmds.checkBox('keepNamespacePrefix_checkbox', query=True, value=1):
-				if ':' in objectName:
-					namespaceSplit = objectName.split(':') 
-					nameSpace = objectName[:-(len(namespaceSplit[len(namespaceSplit)-1]))]
-				else:
-					pass
+			name = ''
 
 			if value == 'prefix':
 				if len(prefix)==0:
 					cmds.warning('Prefix field cannot be empty.')
 				else:
-					name = nameSpace + prefix + objectName
+					if ':' in objectName:
+						objectNameSimple = objectName.rpartition(':')[2]
+						nameSpace = objectName.rpartition(':')[0]
+						name = nameSpace + ":" + prefix + objectNameSimple
+					else:
+						name = prefix + objectName
+
 
 			if value == 'suffix':
 				if len(suffix)==0:
 					cmds.warning('Suffix field cannot be empty.')
 				else:
-					name = nameSpace + objectName + suffix
+					if ':' in objectName:
+						objectNameSimple = objectName.rpartition(':')[2]
+						nameSpace = objectName.rpartition(':')[0]
+						name = nameSpace + ":" + objectNameSimple + suffix
+					else:
+						name = objectName + suffix
 
-			cmds.rename(hierarchyName + '|' + objectName, name)
+			
+			if prefix or suffix:
+				cmds.rename(hierarchyName + '|' + objectName, name)
 
-		endTime = time.time()
+				endTime = time.time()
 
-		displayResult(len(sel), startTime, endTime)
+				displayResult(len(sel), startTime, endTime)
 
 		
 def searchAndReplace(*args):
@@ -402,7 +408,7 @@ def FSrenamerUI():
 	if (cmds.window("FSRenamer_window", exists=True)):
 		cmds.deleteUI("FSRenamer_window")
 
-	window = cmds.window("FSRenamer_window", title= __title__+ ' ' +__version__, iconName='FSRenamer', width=windowWidth, height=windowHeight)
+	window = cmds.window("FSRenamer_window", title= __title__+ ' ' +__version__, iconName='FSRenamer', width=windowWidth, height=windowHeight, sizeable=False)
 
 	cmds.columnLayout( adjustableColumn=True )
 
@@ -458,7 +464,7 @@ def FSrenamerUI():
 	cmds.button('addSuffix_button', width=prefixSize, label='Add Suffix', command=partial(addPrefixSuffix, 'suffix'))
 	cmds.setParent(upLevel=True)
 
-	cmds.checkBox('keepNamespacePrefix_checkbox', l='Keep Namespaces', v=0)
+	#cmds.checkBox('keepNamespacePrefix_checkbox', l='Keep Namespaces', v=0)
 
 	cmds.separator( height=10, style='none' )
 	cmds.setParent(upLevel=True)
