@@ -1,11 +1,11 @@
 import maya.cmds as cmds
 
 __title__ = "Multi UVs Transfert"
-__version__ = '0.1'
+__version__ = '1.0'
 __author__ = "Nicolas Leblanc"
-__company__ = "Dwarf Animation"
+__company__ = "Home"
 __maintainer__ = "Nicolas Leblanc"
-__email__ = "nicolas.leblanc@dwarfanimation.com"
+__email__ = "c4ssios@gmail.com"
 
 
 
@@ -80,7 +80,7 @@ def UVsTransfert(*args):
 
 
 
-def multiUVsTransfertUI():
+def multiUVTransfertUI():
 
 	if (cmds.window("multiUVsTransfert_window", exists=True)):
 		cmds.deleteUI("multiUVsTransfert_window")
