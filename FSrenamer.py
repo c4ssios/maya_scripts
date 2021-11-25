@@ -13,7 +13,7 @@ import time
 
 
 __title__ = "FS Renamer"
-__version__ = '1.10'
+__version__ = '1.11'
 __author__ = "Nicolas Leblanc"
 __company__ = "Framestore"
 __maintainer__ = "Nicolas Leblanc"
@@ -395,9 +395,9 @@ def FSrenamerUI():
 	
 	# Parameters Lists
 
-	materialList = ['stone','paint','metal','wood','plastic','rubber','cloth','glass','ceramic','skin','hair','nail','bone','liquid','polysterene','leather','default','paper','felt','light','plant']
+	materialList = ['concrete', 'stone','paint','metal','wood','plastic','rubber','cloth','glass','ceramic','skin','hair','nail','bone','liquid','polysterene','leather','default','paper','felt','light','plant']
 	materialList.sort()
-	colorList = ['Grey','Black','White','Yellow','Red','Green','Blue','Orange','Purple','Brown','Pink','Colour','Light','Clear','Mixed']
+	colorList = ['Grey','Black','White','Yellow','Red','Green','Blue','Orange','Purple','Brown','Pink','Colour','Clear','Mixed']
 	colorList.sort()
 	positionList = ['C','R', 'L', 'F', 'B', 'FR','BR','FL','BL']
 	extensionList = ['GEP','GES','GED','GEV','PLY','NRB','CRV','GRP','LOC']
